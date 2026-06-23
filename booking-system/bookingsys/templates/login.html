@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
@@ -454,7 +455,7 @@
 <script>
     console.log('صفحه لاگین لود شد');
 </script>
-<script src="/static/js/api.js"></script>
+<script src="{% static 'js/api.js' %}"></script>
 <script>
     console.log('api.js لود شد، AuthAPI:', typeof AuthAPI);
     if (typeof AuthAPI === 'undefined') {
@@ -463,7 +464,7 @@
         console.log('✅ AuthAPI پیدا شد!');
     }
 </script>
-<script src="/static/js/api.js"></script>
+<script src="{% static 'js/api.js' %}"></script>
 <script>
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
         e.preventDefault();

@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
@@ -8,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="/statics/css/style.css">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
     
     <style>
         .menu-overlay {
@@ -379,10 +380,10 @@
             </div>
         </div>
         <ul class="sidebar-menu">
-            <li><a href="provider-services.html"><i class="fas fa-concierge-bell"></i><span class="menu-text"> سرویس‌ها</span></a></li>
-            <li><a href="provider-timeslots.html"><i class="fas fa-clock"></i><span class="menu-text"> زمان‌بندی</span></a></li>
-            <li><a href="provider-bookings.html" class="active"><i class="fas fa-calendar-check"></i><span class="menu-text"> رزروها</span></a></li>
-            <li><a href="provider-profile.html"><i class="fas fa-user"></i><span class="menu-text"> پروفایل</span></a></li>
+            <li><a href="/provider-services/"><i class="fas fa-concierge-bell"></i><span class="menu-text"> سرویس‌ها</span></a></li>
+            <li><a href="/provider-timeslots/"><i class="fas fa-clock"></i><span class="menu-text"> زمان‌بندی</span></a></li>
+            <li><a href="/provider-bookings/" class="active"><i class="fas fa-calendar-check"></i><span class="menu-text"> رزروها</span></a></li>
+            <li><a href="/provider-profile/"><i class="fas fa-user"></i><span class="menu-text"> پروفایل</span></a></li>
         </ul>
     </div>
     
@@ -428,7 +429,7 @@
         </div>
     </div>
     
-    <script src="/static/js/api.js"></script>
+    <script src="{% static 'js/api.js' %}"></script>
     <script>
         const sidebar = document.getElementById('sidebar');
         const menuOverlay = document.getElementById('menuOverlay');
