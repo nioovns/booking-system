@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>درگاه پرداخت | سامانه مدیریت خدمات</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="statics/css/style.css">
+    
+    <style>
+        .menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 98;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .menu-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .sidebar {
+            position: fixed;
+            right: 0;
+            top: 0;
+            width: 70px;
+            height: 100vh;
+            background: rgba(8, 8, 12, 0.96);
+            backdrop-filter: blur(16px);
+            z-index: 99;
+            border-left: 1px solid rgba(255, 255, 255, 0.06);
+            transition: width 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            box-shadow: -8px 0 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+        
+        .sidebar.open {
+            width: 240px;
+        }
+        
+        .sidebar-header {
+            padding: 24px 0 16px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            margin-bottom: 20px;
+        }
+        
+        .menu-toggle-item {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 10px 0;
+            margin: 0 12px;
+            color: rgba(255, 255, 255, 0.7);
+            border-radius: 40px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+        
+        .menu-toggle-item i {
+            font-size: 22px;
+            width: 28px;
+            text-align: center;
+        }
+        
+        .menu-toggle-item .menu-text {
+            font-size: 13px;
+            font-weight: 500;
+            display: none;
+            letter-spacing: 0.3px;
+        }
+        
+        .sidebar.open .menu-toggle-item {
+            justify-content: flex-start;
+            padding: 10px 16px;
+            margin: 0 12px;
+        }
+        
+        .sidebar.open .menu-toggle-item .menu-text {
+            display: inline;
+        }
+        
+        .menu-toggle-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: white;
+        }
+        
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .sidebar-menu li {
+            margin: 4px 0;
+        }
+        
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 10px 0;
+            margin: 0 12px;
+            color: rgba(255, 255, 255, 0.6);
+            text-decoration: none;
+            border-radius: 40px;
+            transition: all 0.25s ease;
+            white-space: nowrap;
+            font-size: 14px;
+            font-weight: 450;
+        }
+        
+        .sidebar-menu a i {
+            font-size: 22px;
+            width: 28px;
+            text-align: center;
+        }
+        
+        .sidebar-menu a .menu-text {
+            display: none;
+            font-size: 13px;
+        }
+        
+        .sidebar.open .sidebar-menu a {
+            justify-content: flex-start;
+            padding: 10px 16px;
+            margin: 0 12px;
+        }
+        
+        .sidebar.open .sidebar-menu a .menu-text {
+            display: inline;
+        }
+        
+        .sidebar-menu a:hover {
+            background: rgba(255, 255, 255, 0.06);
+            color: white;
+        }
+        
+        .sidebar-menu a.active {
+            background: rgba(37, 99, 235, 0.15);
+            color: white;
+        }
+        
+        .sidebar-menu a.active i {
+            background: #2563EB;
+            color: white;
+            border-radius: 50%;
+            padding: 6px;
+            width: 34px;
+            margin-right: -3px;
+        }
+        
+        .sidebar.open .sidebar-menu a.active i {
+            margin-right: 0;
+        }
+        
+        .main-content {
+            margin-right: 70px;
+            padding: 24px 32px;
+            min-height: 100vh;
+            transition: margin-right 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+        }
+        
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        
+        .page-title {
+            color: white;
+            font-size: 26px;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .user-name {
+            color: rgba(255, 255, 255, 0.85);
+            font-weight: 500;
+            font-size: 14px;
+        }
+        
+        .btn-icon {
+            background: rgba(255, 255, 255, 0.06);
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.7);
+            padding: 8px 12px;
+            border-radius: 30px;
+            transition: all 0.2s;
+        }
+        
+        .btn-icon:hover {
+            background: rgba(255, 255, 255, 0.12);
+            color: white;
+        }
+        
+        .payment-container {
+            max-width: 500px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+        
+        .payment-card {
+            background: rgba(255, 255, 255, 0.94);
+            backdrop-filter: blur(8px);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .payment-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #1F2937;
+            margin-bottom: 20px;
+        }
+        
+        .amount {
+            font-size: 36px;
+            font-weight: 700;
+            color: #2563EB;
+            margin: 20px 0;
+        }
+        
+        .card-details {
+            background: #F9FAFB;
+            border-radius: 16px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: right;
+        }
+        
+        .card-details input {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border: 1px solid #E5E7EB;
+            border-radius: 12px;
+            font-family: 'Vazirmatn';
+            font-size: 14px;
+        }
+        
+        .card-details input:focus {
+            outline: none;
+            border-color: #2563EB;
+        }
+        
+        .btn-pay {
+            width: 100%;
+            background: #10B981;
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 40px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: all 0.2s;
+        }
+        
+        .btn-pay:hover {
+            background: #059669;
+            transform: translateY(-2px);
+        }
+        
+        @media (max-width: 800px) {
+            .main-content {
+                margin-right: 0;
+                padding: 16px;
+            }
+            .sidebar {
+                right: -70px;
+            }
+            .sidebar.open {
+                right: 0;
+            }
+            .payment-card {
+                padding: 20px;
+            }
+            .amount {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="glass-header">
+        <div class="header-title">سامانه مدیریت خدمات</div>
+    </header>
+    
+    <div class="menu-overlay" id="menuOverlay"></div>
+    
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="menu-toggle-item" id="menuToggleBtn">
+                <i class="fas fa-bars"></i>
+                <span class="menu-text">منو</span>
+            </div>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="customer-services.html"><i class="fas fa-search"></i><span class="menu-text"> جستجوی خدمات</span></a></li>
+            <li><a href="customer-bookings.html"><i class="fas fa-calendar-check"></i><span class="menu-text"> رزروهای من</span></a></li>
+            <li><a href="customer-profile.html"><i class="fas fa-user"></i><span class="menu-text"> پروفایل</span></a></li>
+        </ul>
+    </div>
+    
+    <div class="main-content">
+        <div class="dashboard-header">
+            <h1 class="page-title">درگاه پرداخت</h1>
+            <div class="user-info">
+                <span class="user-name" id="username">مشتری</span>
+                <button class="btn-icon" id="logoutBtn" title="خروج"><i class="fas fa-sign-out-alt"></i></button>
+            </div>
+        </div>
+        
+        <div class="payment-container">
+            <div class="payment-card" id="paymentCard">
+                <div style="text-align: center; padding: 40px;">در حال بارگذاری...</div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="/static/js/api.js"></script>
+    <script>
+        const sidebar = document.getElementById('sidebar');
+        const menuOverlay = document.getElementById('menuOverlay');
+        const menuToggleBtn = document.getElementById('menuToggleBtn');
+        
+        function toggleMenu() {
+            if (sidebar.classList.contains('open')) {
+                sidebar.classList.remove('open');
+                menuOverlay.classList.remove('active');
+                document.body.style.overflow = '';
+            } else {
+                sidebar.classList.add('open');
+                menuOverlay.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+        
+        if (menuToggleBtn) menuToggleBtn.addEventListener('click', toggleMenu);
+        if (menuOverlay) menuOverlay.addEventListener('click', toggleMenu);
+        
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', () => {
+                AuthAPI.logout();
+            });
+        }
+        
+        const usernameSpan = document.getElementById('username');
+        if (usernameSpan) {
+            usernameSpan.innerText = localStorage.getItem('username') || 'مشتری';
+        }
+        
+        const urlParams = new URLSearchParams(window.location.search);
+        let bookingId = urlParams.get('bookingId');
+        let amount = urlParams.get('amount');
+        
+        if (!bookingId) {
+            bookingId = Date.now();
+        }
+        if (!amount) {
+            amount = 250000; 
+        }
+        
+        function loadPayment() {
+            document.getElementById('paymentCard').innerHTML = `
+                <div class="payment-title">پرداخت رزرو</div>
+                <div class="amount">${parseInt(amount).toLocaleString()} تومان</div>
+                <div class="card-details">
+                    <input type="text" id="cardNumber" placeholder="شماره کارت (16 رقمی)">
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="expiryDate" placeholder="تاریخ انقضا (MM/YY)" style="flex:1;">
+                        <input type="text" id="cvv" placeholder="CVV2" style="flex:1;" maxlength="4">
+                    </div>
+                    <input type="text" id="cardHolder" placeholder="نام دارنده کارت">
+                </div>
+                <button class="btn-pay" id="payBtn">پرداخت</button>
+            `;
+            
+            document.getElementById('payBtn').addEventListener('click', () => {
+                const cardNumber = document.getElementById('cardNumber').value.trim();
+                const expiryDate = document.getElementById('expiryDate').value.trim();
+                const cvv = document.getElementById('cvv').value.trim();
+                const cardHolder = document.getElementById('cardHolder').value.trim();
+                
+                if (!cardNumber || cardNumber.length < 16) {
+                    showError('لطفاً شماره کارت معتبر وارد کنید');
+                    return;
+                }
+                if (!expiryDate) {
+                    showError('لطفاً تاریخ انقضا را وارد کنید');
+                    return;
+                }
+                if (!cvv || cvv.length < 3) {
+                    showError('لطفاً CVV را وارد کنید');
+                    return;
+                }
+                if (!cardHolder) {
+                    showError('لطفاً نام دارنده کارت را وارد کنید');
+                    return;
+                }
+                
+                showSuccess('پرداخت با موفقیت انجام شد! در حال انتقال به صفحه رزروهای من...');
+                
+                setTimeout(() => {
+                    window.location.href = 'customer-bookings.html';
+                }, 2000);
+            });
+        }
+        
+        loadPayment();
+    </script>
+</body>
+</html>

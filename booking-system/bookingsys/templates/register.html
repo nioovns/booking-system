@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ثبت‌نام | سامانه مدیریت خدمات</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Vazirmatn', 'Segoe UI', Tahoma, sans-serif;
+            background: #0C1844;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .glass-header {
+            background: linear-gradient(90deg, #000612 0%, #293e88 40%, #1E3A8A 70%, #000612 100%);
+            backdrop-filter: blur(8px);
+            padding: 70px 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            min-height: 220px;
+            border-radius: 0 0 40px 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+
+        .glass-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 20% 50%, rgba(37, 99, 235, 0.2) 0%, transparent 60%),
+                        radial-gradient(circle at 80% 50%, rgba(0, 0, 0, 0.2) 0%, transparent 60%);
+            border-radius: 0 0 40px 40px;
+            pointer-events: none;
+        }
+
+        .glass-header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 25%;
+            width: 50%;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #60A5FA, #93C5FD, #60A5FA, transparent);
+            border-radius: 3px;
+            animation: lineGlow 2.5s ease-in-out infinite;
+        }
+
+        @keyframes lineGlow {
+            0% {
+                opacity: 0.4;
+                width: 30%;
+                left: 35%;
+            }
+            50% {
+                opacity: 1;
+                width: 60%;
+                left: 20%;
+            }
+            100% {
+                opacity: 0.4;
+                width: 30%;
+                left: 35%;
+            }
+        }
+
+        .header-title {
+            font-size: 42px;
+            font-weight: 700;
+            position: relative;
+            display: inline-block;
+            background: linear-gradient(120deg, 
+                #ffffff 0%, 
+                #ffffff 35%, 
+                #93C5FD 50%, 
+                #ffffff 65%, 
+                #ffffff 100%);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: shine 3s linear infinite;
+            z-index: 2;
+        }
+
+        @keyframes shine {
+            0% {
+                background-position: 0% center;
+            }
+            100% {
+                background-position: 200% center;
+            }
+        }
+
+        .form-container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 80px auto 80px;
+            padding: 0 40px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px 30px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .upload-group {
+            grid-column: span 3;
+            margin-top: 10px;
+        }
+
+        .upload-group .form-label {
+            font-size: 15px;
+            margin-bottom: 12px;
+        }
+
+        .file-upload {
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            padding: 25px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: rgba(255, 255, 255, 0.05);
+            width: 100%;
+        }
+
+        .file-upload:hover {
+            border-color: #60A5FA;
+            background: rgba(96, 165, 250, 0.1);
+        }
+
+        .file-upload input {
+            display: none;
+        }
+
+        .file-upload i {
+            font-size: 42px;
+            color: #60A5FA;
+            margin-bottom: 10px;
+        }
+
+        .file-upload p {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 15px;
+        }
+
+        .preview-image {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-top: 15px;
+            border: 3px solid #60A5FA;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: rgba(255, 255, 255, 0.85);
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .required-star {
+            color: #EF4444;
+            margin-right: 3px;
+        }
+
+        .optional-badge {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.5);
+            margin-right: 6px;
+            font-weight: normal;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 14px 16px;
+            border: none;
+            border-radius: 14px;
+            font-size: 14px;
+            background: white;
+            color: #1F2937;
+            outline: none;
+            transition: all 0.2s ease;
+            font-family: 'Vazirmatn';
+        }
+
+        .form-input::placeholder {
+            color: #9CA3AF;
+        }
+
+        .form-input:focus {
+            box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.4);
+        }
+
+        select.form-input {
+            cursor: pointer;
+        }
+
+        .fab-container {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            z-index: 1000;
+        }
+
+        .btn-primary {
+            position: relative;
+            overflow: hidden;
+            padding: 14px 36px;
+            background: linear-gradient(135deg, #0a0a0a 0%, #0C1844 50%, #1E3A5F 100%);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Vazirmatn';
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(37, 99, 235, 0.4);
+            background: linear-gradient(135deg, #1a1a2e 0%, #1A2A5E 50%, #2A4A7F 100%);
+        }
+
+        .btn-primary::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.25);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.5s, height 0.5s;
+        }
+
+        .btn-primary:active::after {
+            width: 200%;
+            height: 200%;
+        }
+
+        .auth-footer {
+            text-align: center;
+            margin-top: 60px;
+            margin-bottom: 20px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+        }
+
+        .auth-footer a {
+            color: #60A5FA;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .auth-footer a:hover {
+            text-decoration: underline;
+        }
+
+        .custom-alert {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            z-index: 10000;
+            animation: slideInAlert 0.3s ease-out;
+        }
+        .custom-alert-success { background: #10B981; color: white; }
+        .custom-alert-error { background: #EF4444; color: white; }
+        
+        @keyframes slideInAlert {
+            from { opacity: 0; transform: translateX(50px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @media (max-width: 900px) {
+            .form-container {
+                margin-top: 60px;
+            }
+            .form-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 20px;
+            }
+            .upload-group {
+                grid-column: span 2;
+            }
+            .glass-header {
+                padding: 50px 25px;
+                min-height: 170px;
+            }
+            .header-title {
+                font-size: 32px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .form-container {
+                margin-top: 40px;
+                padding: 0 20px;
+            }
+            .form-grid {
+                grid-template-columns: 1fr;
+                gap: 18px;
+            }
+            .upload-group {
+                grid-column: span 1;
+            }
+            .glass-header {
+                padding: 40px 20px;
+                min-height: 140px;
+                border-radius: 0 0 25px 25px;
+            }
+            .header-title {
+                font-size: 24px;
+            }
+            .fab-container {
+                bottom: 20px;
+                left: 20px;
+            }
+            .btn-primary {
+                padding: 10px 24px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="glass-header">
+        <div class="header-title">
+            ثبت‌نام در سامانه
+        </div>
+    </header>
+
+    <div class="form-container">
+        <form id="registerForm">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">نام <span class="required-star">*</span></label>
+                    <input type="text" id="firstName" class="form-input" placeholder="نام خود را وارد کنید" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">نام خانوادگی <span class="required-star">*</span></label>
+                    <input type="text" id="lastName" class="form-input" placeholder="نام خانوادگی" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">نام کاربری <span class="optional-badge">(اختیاری)</span></label>
+                    <input type="text" id="username" class="form-input" placeholder="نام کاربری">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">ایمیل <span class="optional-badge">(اختیاری)</span></label>
+                    <input type="email" id="email" class="form-input" placeholder="example@domain.com">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">رمز عبور <span class="required-star">*</span></label>
+                    <input type="password" id="password" class="form-input" placeholder="حداقل ۶ کاراکتر" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">تکرار رمز عبور <span class="required-star">*</span></label>
+                    <input type="password" id="confirmPassword" class="form-input" placeholder="تکرار رمز عبور" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">نقش کاربری <span class="required-star">*</span></label>
+                    <select id="role" class="form-input" required>
+                        <option value="" disabled selected>— انتخاب کنید —</option>
+                        <option value="customer">مشتری (Customer)</option>
+                        <option value="provider">ارائه‌دهنده خدمت (Provider)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">شماره تماس <span class="required-star">*</span></label>
+                    <input type="tel" id="phone" class="form-input" placeholder="0912xxx" required>
+                </div>
+
+                <div class="form-group upload-group">
+                    <label class="form-label">تصویر پروفایل <span class="optional-badge">(اختیاری)</span></label>
+                    <div class="file-upload" id="fileUploadBtn">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>برای آپلود تصویر کلیک کنید یا بکشید و رها کنید</p>
+                        <input type="file" id="profileImage" accept="image/*">
+                    </div>
+                    <div id="imagePreview" style="text-align: center;"></div>
+                </div>
+            </div>
+        </form>
+
+        <div class="auth-footer">
+            قبلاً ثبت‌نام کرده‌اید؟ <a href="login.html">ورود به سامانه</a>
+        </div>
+    </div>
+
+    <div class="fab-container">
+        <button type="submit" form="registerForm" class="btn-primary">
+            <i class="fas fa-check"></i>
+            ثبت‌نام
+        </button>
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('profileImage');
+        const previewDiv = document.getElementById('imagePreview');
+        
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    previewDiv.innerHTML = `<img src="${event.target.result}" class="preview-image" alt="پیش‌نمایش">`;
+                };
+                reader.readAsDataURL(file);
+            } else {
+                previewDiv.innerHTML = '';
+            }
+        });
+
+        document.getElementById('fileUploadBtn').addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        function showError(message) {
+            removeAlerts();
+            const alert = document.createElement('div');
+            alert.className = 'custom-alert custom-alert-error';
+            alert.textContent = message;
+            document.body.appendChild(alert);
+            setTimeout(() => alert.remove(), 3000);
+        }
+
+        function showSuccess(message) {
+            removeAlerts();
+            const alert = document.createElement('div');
+            alert.className = 'custom-alert custom-alert-success';
+            alert.textContent = message;
+            document.body.appendChild(alert);
+            setTimeout(() => alert.remove(), 3000);
+        }
+
+        function removeAlerts() {
+            document.querySelectorAll('.custom-alert').forEach(a => a.remove());
+        }
+
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const firstName = document.getElementById('firstName').value.trim();
+            const lastName = document.getElementById('lastName').value.trim();
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const role = document.getElementById('role').value;
+            const phone = document.getElementById('phone').value.trim();
+            
+            if (!firstName) { showError('لطفاً نام خود را وارد کنید'); return; }
+            if (!lastName) { showError('لطفاً نام خانوادگی خود را وارد کنید'); return; }
+            if (!password) { showError('لطفاً رمز عبور را وارد کنید'); return; }
+            if (password.length < 6) { showError('رمز عبور باید حداقل ۶ کاراکتر باشد'); return; }
+            if (password !== confirmPassword) { showError('رمز عبور و تکرار آن مطابقت ندارند'); return; }
+            if (!role) { showError('لطفاً نقش کاربری خود را انتخاب کنید'); return; }
+            if (!phone) { showError('لطفاً شماره تماس خود را وارد کنید'); return; }
+            
+            const formData = new FormData();
+            formData.append('firstName', firstName);
+            formData.append('lastName', lastName);
+            formData.append('phone', phone);
+            formData.append('password', password);
+            formData.append('role', role);
+            
+            const username = document.getElementById('username').value.trim();
+            const email = document.getElementById('email').value.trim();
+            if (username) formData.append('username', username);
+            if (email) formData.append('email', email);
+            if (fileInput.files[0]) formData.append('profileImage', fileInput.files[0]);
+            
+            showSuccess('ثبت‌نام با موفقیت انجام شد! در حال انتقال به صفحه ورود...');
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 2000);
+        });
+    </script>
+</body>
+</html>

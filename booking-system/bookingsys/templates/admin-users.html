@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مدیریت کاربران | سامانه مدیریت خدمات</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="statics/css/style.css">
+    
+    <style>
+        .menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 98;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .menu-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .sidebar {
+            position: fixed;
+            right: 0;
+            top: 0;
+            width: 70px;
+            height: 100vh;
+            background: rgba(8, 8, 12, 0.96);
+            backdrop-filter: blur(16px);
+            z-index: 99;
+            border-left: 1px solid rgba(255, 255, 255, 0.06);
+            transition: width 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            box-shadow: -8px 0 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+        
+        .sidebar.open {
+            width: 240px;
+        }
+        
+        .sidebar-header {
+            padding: 24px 0 16px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            margin-bottom: 20px;
+        }
+        
+        .menu-toggle-item {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 10px 0;
+            margin: 0 12px;
+            color: rgba(255, 255, 255, 0.7);
+            border-radius: 40px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+        
+        .menu-toggle-item i {
+            font-size: 22px;
+            width: 28px;
+            text-align: center;
+        }
+        
+        .menu-toggle-item .menu-text {
+            font-size: 13px;
+            font-weight: 500;
+            display: none;
+            letter-spacing: 0.3px;
+        }
+        
+        .sidebar.open .menu-toggle-item {
+            justify-content: flex-start;
+            padding: 10px 16px;
+            margin: 0 12px;
+        }
+        
+        .sidebar.open .menu-toggle-item .menu-text {
+            display: inline;
+        }
+        
+        .menu-toggle-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: white;
+        }
+        
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .sidebar-menu li {
+            margin: 4px 0;
+        }
+        
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 10px 0;
+            margin: 0 12px;
+            color: rgba(255, 255, 255, 0.6);
+            text-decoration: none;
+            border-radius: 40px;
+            transition: all 0.25s ease;
+            white-space: nowrap;
+            font-size: 14px;
+            font-weight: 450;
+        }
+        
+        .sidebar-menu a i {
+            font-size: 22px;
+            width: 28px;
+            text-align: center;
+        }
+        
+        .sidebar-menu a .menu-text {
+            display: none;
+            font-size: 13px;
+        }
+        
+        .sidebar.open .sidebar-menu a {
+            justify-content: flex-start;
+            padding: 10px 16px;
+            margin: 0 12px;
+        }
+        
+        .sidebar.open .sidebar-menu a .menu-text {
+            display: inline;
+        }
+        
+        .sidebar-menu a:hover {
+            background: rgba(255, 255, 255, 0.06);
+            color: white;
+        }
+        
+        .sidebar-menu a.active {
+            background: rgba(37, 99, 235, 0.15);
+            color: white;
+        }
+        
+        .sidebar-menu a.active i {
+            background: #2563EB;
+            color: white;
+            border-radius: 50%;
+            padding: 6px;
+            width: 34px;
+            margin-right: -3px;
+        }
+        
+        .sidebar.open .sidebar-menu a.active i {
+            margin-right: 0;
+        }
+        
+        .main-content {
+            margin-right: 70px;
+            padding: 24px 32px;
+            min-height: 100vh;
+            transition: margin-right 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+        }
+        
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        
+        .page-title {
+            color: white;
+            font-size: 26px;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .user-name {
+            color: rgba(255, 255, 255, 0.85);
+            font-weight: 500;
+            font-size: 14px;
+        }
+        
+        .btn-icon {
+            background: rgba(255, 255, 255, 0.06);
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.7);
+            padding: 8px 12px;
+            border-radius: 30px;
+            transition: all 0.2s;
+        }
+        
+        .btn-icon:hover {
+            background: rgba(255, 255, 255, 0.12);
+            color: white;
+        }
+        
+        .users-table-container {
+            background: rgba(255, 255, 255, 0.94);
+            backdrop-filter: blur(8px);
+            border-radius: 20px;
+            padding: 20px;
+            overflow-x: auto;
+        }
+        
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .table-header h2 {
+            color: #1F2937;
+            font-size: 18px;
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        .btn-add {
+            background: #2563EB;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            font-family: 'Vazirmatn';
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-add:hover {
+            background: #1D4ED8;
+            transform: translateY(-1px);
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            padding: 14px 12px;
+            text-align: right;
+            border-bottom: 1px solid #E5E7EB;
+        }
+        
+        th {
+            background: #F9FAFB;
+            font-weight: 600;
+            color: #374151;
+            font-size: 14px;
+        }
+        
+        td {
+            color: #4B5563;
+            font-size: 14px;
+        }
+        
+        .role-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .role-admin {
+            background: #FEE2E2;
+            color: #DC2626;
+        }
+        
+        .role-provider {
+            background: #FEF3C7;
+            color: #D97706;
+        }
+        
+        .role-customer {
+            background: #D1FAE5;
+            color: #059669;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .btn-edit, .btn-delete {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 5px 8px;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+        
+        .btn-edit {
+            color: #2563EB;
+        }
+        
+        .btn-edit:hover {
+            background: #EFF6FF;
+        }
+        
+        .btn-delete {
+            color: #EF4444;
+        }
+        
+        .btn-delete:hover {
+            background: #FEE2E2;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 24px;
+            padding: 28px;
+            width: 90%;
+            max-width: 420px;
+        }
+        
+        .modal-content h3 {
+            margin-bottom: 20px;
+            color: #1F2937;
+            font-size: 20px;
+        }
+        
+        .modal-content input, .modal-content select {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border: 1px solid #E5E7EB;
+            border-radius: 12px;
+            font-family: 'Vazirmatn';
+            font-size: 14px;
+        }
+        
+        .modal-content input:focus, .modal-content select:focus {
+            outline: none;
+            border-color: #2563EB;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+        
+        .pwd-modal .modal-content {
+            max-width: 380px;
+        }
+        
+        @media (max-width: 800px) {
+            .main-content {
+                margin-right: 0;
+                padding: 16px;
+            }
+            .sidebar {
+                right: -70px;
+            }
+            .sidebar.open {
+                right: 0;
+            }
+            .table-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .btn-add {
+                justify-content: center;
+            }
+            th, td {
+                padding: 10px 8px;
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="glass-header">
+        <div class="header-title">
+            پنل مدیریت سیستم
+        </div>
+    </header>
+    
+    <div class="menu-overlay" id="menuOverlay"></div>
+    
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="menu-toggle-item" id="menuToggleBtn">
+                <i class="fas fa-bars"></i>
+                <span class="menu-text">منو</span>
+            </div>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="admin-dashboard.html"><i class="fas fa-chart-line"></i><span class="menu-text"> داشبورد</span></a></li>
+            <li><a href="admin-users.html" class="active"><i class="fas fa-users"></i><span class="menu-text"> کاربران</span></a></li>
+            <li><a href="admin-services.html"><i class="fas fa-concierge-bell"></i><span class="menu-text"> خدمات</span></a></li>
+            <li><a href="admin-bookings.html"><i class="fas fa-calendar-check"></i><span class="menu-text"> رزروها</span></a></li>
+            <li><a href="admin-reports.html"><i class="fas fa-chart-bar"></i><span class="menu-text"> گزارشات</span></a></li>
+        </ul>
+    </div>
+    
+    <div class="main-content">
+        <div class="dashboard-header">
+            <h1 class="page-title">مدیریت کاربران</h1>
+            <div class="user-info">
+                <span class="user-name" id="username">ادمین</span>
+                <button class="btn-icon" id="changePasswordBtn" title="تغییر رمز">
+                    <i class="fas fa-key"></i>
+                </button>
+                <button class="btn-icon" id="logoutBtn" title="خروج">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
+        </div>
+        
+        <div class="users-table-container">
+            <div class="table-header">
+                <h2><i class="fas fa-list"></i> لیست کاربران</h2>
+                <button class="btn-add" id="addUserBtn">
+                    <i class="fas fa-plus"></i> افزودن کاربر جدید
+                </button>
+            </div>
+            <table id="usersTable">
+                <thead>
+                    <tr>
+                        <th>نام کاربری</th>
+                        <th>نقش</th>
+                        <th>تاریخ عضویت</th>
+                        <th>عملیات</th>
+                    </tr>
+                </thead>
+                <tbody id="usersTableBody">
+                    <tr><td colspan="4" style="text-align: center;">در حال بارگذاری...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <div id="userModal" class="modal">
+        <div class="modal-content">
+            <h3 id="modalTitle">افزودن کاربر جدید</h3>
+            <input type="text" id="modalUsername" placeholder="نام کاربری">
+            <input type="password" id="modalPassword" placeholder="رمز عبور">
+            <select id="modalRole">
+                <option value="customer">مشتری (Customer)</option>
+                <option value="provider">ارائه‌دهنده (Provider)</option>
+                <option value="admin">ادمین (Admin)</option>
+            </select>
+            <div class="modal-buttons">
+                <button id="saveUserBtn" class="btn-primary" style="flex:1;">ذخیره</button>
+                <button id="closeModalBtn" class="btn-secondary" style="flex:1;">انصراف</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="changePasswordModal" class="modal pwd-modal">
+        <div class="modal-content">
+            <h3>تغییر رمز عبور</h3>
+            <input type="password" id="oldPassword" placeholder="رمز فعلی">
+            <input type="password" id="newPassword" placeholder="رمز جدید">
+            <input type="password" id="confirmPassword" placeholder="تکرار رمز جدید">
+            <div class="modal-buttons">
+                <button id="submitChangePassword" class="btn-primary" style="flex:1;">تایید</button>
+                <button id="closePwdModalBtn" class="btn-secondary" style="flex:1;">انصراف</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="/static/js/api.js"></script>
+    <script>
+        const sidebar = document.getElementById('sidebar');
+        const menuOverlay = document.getElementById('menuOverlay');
+        const menuToggleBtn = document.getElementById('menuToggleBtn');
+        
+        function toggleMenu() {
+            if (sidebar.classList.contains('open')) {
+                sidebar.classList.remove('open');
+                menuOverlay.classList.remove('active');
+                document.body.style.overflow = '';
+            } else {
+                sidebar.classList.add('open');
+                menuOverlay.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+        
+        menuToggleBtn.addEventListener('click', toggleMenu);
+        menuOverlay.addEventListener('click', toggleMenu);
+        
+        const roleMap = {
+            'admin': 'ادمین',
+            'provider': 'ارائه‌دهنده',
+            'customer': 'مشتری'
+        };
+        
+        async function loadUsers() {
+            try {
+                const users = await AdminAPI.getUsers();
+                if (users && users.length > 0) {
+                    document.getElementById('usersTableBody').innerHTML = users.map(user => `
+                        <tr>
+                            <td>${user.username}</td>
+                            <td><span class="role-badge role-${user.role}">${roleMap[user.role] || user.role}</span></td>
+                            <td>${user.createdAt || '-'}</td>
+                            <td class="action-buttons">
+                                <button class="btn-edit" onclick="editUser(${user.id})" title="ویرایش"><i class="fas fa-edit"></i></button>
+                                <button class="btn-delete" onclick="deleteUser(${user.id})" title="حذف"><i class="fas fa-trash"></i></button>
+                            </td>
+                        </tr>
+                    `).join('');
+                } else {
+                    document.getElementById('usersTableBody').innerHTML = '<tr><td colspan="4" style="text-align: center;">هیچ کاربری یافت نشد</td></tr>';
+                }
+            } catch(err) {
+                showError('خطا در بارگذاری کاربران');
+                console.error(err);
+            }
+        }
+        
+        document.getElementById('addUserBtn').addEventListener('click', () => {
+            document.getElementById('modalTitle').innerText = 'افزودن کاربر جدید';
+            document.getElementById('modalUsername').value = '';
+            document.getElementById('modalPassword').value = '';
+            document.getElementById('modalRole').value = 'customer';
+            document.getElementById('userModal').classList.add('active');
+        });
+        
+        document.getElementById('closeModalBtn').addEventListener('click', () => {
+            document.getElementById('userModal').classList.remove('active');
+        });
+        
+        document.getElementById('saveUserBtn').addEventListener('click', async () => {
+            const username = document.getElementById('modalUsername').value.trim();
+            const password = document.getElementById('modalPassword').value;
+            const role = document.getElementById('modalRole').value;
+            
+            if (!username || !password) {
+                showError('لطفاً نام کاربری و رمز عبور را وارد کنید');
+                return;
+            }
+            if (password.length < 6) {
+                showError('رمز عبور باید حداقل ۶ کاراکتر باشد');
+                return;
+            }
+            
+            try {
+                await AdminAPI.createUser(username, password, role);
+                showSuccess('کاربر با موفقیت اضافه شد');
+                document.getElementById('userModal').classList.remove('active');
+                loadUsers();
+            } catch(err) {
+                showError(err.message);
+            }
+        });
+        
+        window.editUser = async (id) => {
+            showError('ویرایش کاربر در حال توسعه است');
+        };
+        
+        window.deleteUser = async (id) => {
+            if (confirm('آیا از حذف این کاربر اطمینان دارید؟')) {
+                try {
+                    await AdminAPI.deleteUser(id);
+                    showSuccess('کاربر با موفقیت حذف شد');
+                    loadUsers();
+                } catch(err) {
+                    showError(err.message);
+                }
+            }
+        };
+        
+        document.getElementById('username').innerText = localStorage.getItem('username') || 'ادمین';
+        
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            AuthAPI.logout();
+        });
+        
+        const pwdModal = document.getElementById('changePasswordModal');
+        document.getElementById('changePasswordBtn').addEventListener('click', () => pwdModal.classList.add('active'));
+        document.getElementById('closePwdModalBtn').addEventListener('click', () => pwdModal.classList.remove('active'));
+        
+        document.getElementById('submitChangePassword').addEventListener('click', async () => {
+            const oldPass = document.getElementById('oldPassword').value;
+            const newPass = document.getElementById('newPassword').value;
+            const confirmPass = document.getElementById('confirmPassword').value;
+            
+            try {
+                await AuthAPI.changePassword(oldPass, newPass, confirmPass);
+                showSuccess('رمز با موفقیت تغییر کرد');
+                pwdModal.classList.remove('active');
+                document.getElementById('oldPassword').value = '';
+                document.getElementById('newPassword').value = '';
+                document.getElementById('confirmPassword').value = '';
+            } catch(err) {
+                showError(err.message);
+            }
+        });
+        
+        loadUsers();
+    </script>
+</body>
+</html>

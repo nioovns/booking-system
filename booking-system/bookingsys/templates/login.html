@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ورود به سامانه مدیریت خدمات</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Vazirmatn', 'Segoe UI', Tahoma, sans-serif;
+            background: #E8ECEF;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .container {
+            position: relative;
+            width: 100%;
+            max-width: 1400px;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .circle {
+            position: absolute;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: morphingFloat 10s ease-in-out infinite;
+        }
+
+        .size-1 {
+            width: 280px;
+            height: 280px;
+        }
+
+        .size-2 {
+            width: 180px;
+            height: 180px;
+        }
+
+        .size-3 {
+            width: 120px;
+            height: 120px;
+        }
+
+        .size-4 {
+            width: 80px;
+            height: 80px;
+        }
+
+        .size-5 {
+            width: 50px;
+            height: 50px;
+        }
+
+        .size-6 {
+            width: 200px;
+            height: 200px;
+        }
+
+        .size-7 {
+            width: 100px;
+            height: 100px;
+        }
+
+        .size-8 {
+            width: 60px;
+            height: 60px;
+        }
+
+        .size-9 {
+            width: 140px;
+            height: 140px;
+        }
+
+        .size-10 {
+            width: 35px;
+            height: 35px;
+        }
+
+        .solid-1 {
+            background: #D4D9E2;
+        }
+
+        .solid-2 {
+            background: #B8C0CC;
+        }
+
+        .solid-3 {
+            background: #9AA3B3;
+        }
+
+        .solid-4 {
+            background: #7E8A9B;
+        }
+
+        .solid-5 {
+            background: #64748B;
+        }
+
+        .border-1 {
+            border: 2.5px solid #D4D9E2;
+            background: transparent;
+        }
+
+        .border-2 {
+            border: 2.5px solid #B8C0CC;
+            background: transparent;
+        }
+
+        .border-3 {
+            border: 2.5px solid #9AA3B3;
+            background: transparent;
+        }
+
+        .border-4 {
+            border: 2.5px solid #7E8A9B;
+            background: transparent;
+        }
+
+        .border-5 {
+            border: 2.5px solid #64748B;
+            background: transparent;
+        }
+
+        .pos-1 {
+            top: 5%;
+            left: 5%;
+            animation-delay: 0s;
+        }
+
+        .pos-2 {
+            top: 15%;
+            right: 8%;
+            animation-delay: 1s;
+        }
+
+        .pos-3 {
+            bottom: 10%;
+            left: 8%;
+            animation-delay: 2s;
+        }
+
+        .pos-4 {
+            bottom: 20%;
+            right: 12%;
+            animation-delay: 0.5s;
+        }
+
+        .pos-5 {
+            top: 50%;
+            left: -30px;
+            animation-delay: 3s;
+        }
+
+        .pos-6 {
+            top: 60%;
+            right: 5%;
+            animation-delay: 1.5s;
+        }
+
+        .pos-7 {
+            bottom: 40%;
+            left: 15%;
+            animation-delay: 2.5s;
+        }
+
+        .pos-8 {
+            top: 25%;
+            right: 25%;
+            animation-delay: 4s;
+        }
+
+        .pos-9 {
+            top: 70%;
+            right: 20%;
+            animation-delay: 0.8s;
+        }
+
+        .pos-10 {
+            bottom: 5%;
+            right: 30%;
+            animation-delay: 3.5s;
+        }
+
+        @keyframes morphingFloat {
+            0% {
+                transform: translateY(0) scale(1) rotate(0deg);
+                border-radius: 50%;
+            }
+            33% {
+                transform: translateY(-18px) scale(1.04) rotate(3deg);
+                border-radius: 45% 55% 55% 45% / 50% 45% 55% 50%;
+            }
+            66% {
+                transform: translateY(10px) scale(0.98) rotate(-2deg);
+                border-radius: 55% 45% 45% 55% / 45% 50% 50% 55%;
+            }
+            100% {
+                transform: translateY(0) scale(1) rotate(0deg);
+                border-radius: 50%;
+            }
+        }
+
+        .login-form-card {
+            position: relative;
+            background: #0C1844;
+            border-radius: 28px;
+            padding: 55px 50px;
+            width: 100%;
+            max-width: 440px;
+            box-shadow: 0 30px 50px rgba(0, 0, 0, 0.25);
+            z-index: 100;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        .form-title {
+            color: white;
+            font-size: 30px;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 40px;
+            letter-spacing: 0.3px;
+        }
+
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+        }
+
+        .form-group {
+            position: relative;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 18px 22px;
+            border: none;
+            border-radius: 14px;
+            font-size: 16px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            outline: none;
+            transition: all 0.3s ease;
+            font-family: 'Vazirmatn', 'Segoe UI', sans-serif;
+            text-align: right;
+        }
+
+        .form-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+            font-weight: 400;
+        }
+
+        .form-input:focus {
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.25);
+            transform: translateY(-2px);
+        }
+
+        .form-submit {
+            width: 100%;
+            padding: 18px;
+            background: white;
+            color: #0C1844;
+            border: none;
+            border-radius: 14px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 8px;
+            font-family: 'Vazirmatn', 'Segoe UI', sans-serif;
+        }
+
+        .form-submit:hover {
+            background: #F3F4F6;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .form-submit:active {
+            transform: translateY(-1px);
+        }
+
+        .register-link {
+            text-align: center;
+            margin-top: 25px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+        }
+
+        .register-link a {
+            color: #60A5FA;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .register-link a:hover {
+            color: #93C5FD;
+            text-decoration: underline;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px) scale(0.96);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .custom-alert {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            padding: 16px 24px;
+            border-radius: 12px;
+            font-family: 'Vazirmatn', 'Segoe UI', sans-serif;
+            font-size: 15px;
+            font-weight: 500;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            z-index: 10000;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.3s ease;
+            max-width: 350px;
+            text-align: right;
+        }
+
+        .custom-alert.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .custom-alert-success {
+            background: #10B981;
+            color: white;
+        }
+
+        .custom-alert-error {
+            background: #EF4444;
+            color: white;
+        }
+
+        @media (max-width: 900px) {
+            .pos-3, .pos-6, .pos-9 {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+
+            .login-form-card {
+                padding: 45px 35px;
+                max-width: 380px;
+            }
+
+            .form-title {
+                font-size: 26px;
+                margin-bottom: 35px;
+            }
+
+            .custom-alert {
+                top: 20px;
+                right: 20px;
+                left: 20px;
+                max-width: none;
+            }
+
+            .pos-1, .pos-2, .pos-4, .pos-5, .pos-7, .pos-8, .pos-10 {
+                display: none;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .login-form-card {
+                padding: 35px 25px;
+            }
+
+            .form-title {
+                font-size: 24px;
+            }
+
+            .form-input {
+                padding: 16px 18px;
+                font-size: 15px;
+            }
+
+            .form-submit {
+                padding: 16px;
+                font-size: 17px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="circle solid-1 size-1 pos-1"></div>
+    <div class="circle solid-2 size-3 pos-2"></div>
+    <div class="circle solid-3 size-5 pos-3"></div>
+    <div class="circle solid-4 size-7 pos-4"></div>
+    <div class="circle solid-5 size-9 pos-5"></div>
+
+    <div class="circle border-1 size-2 pos-6"></div>
+    <div class="circle border-2 size-4 pos-7"></div>
+    <div class="circle border-3 size-6 pos-8"></div>
+    <div class="circle border-4 size-8 pos-9"></div>
+    <div class="circle border-5 size-10 pos-10"></div>
+
+    <div class="login-form-card">
+        <h1 class="form-title">ورود به سامانه</h1>
+
+        <form id="loginForm" class="login-form" method="post" action="/api/users/login/">
+            <div class="form-group">
+                <input type="text" id="username" name="username" class="form-input" placeholder="نام کاربری" required>
+            </div>
+
+            <div class="form-group">
+                <input type="password" id="password" name="password" class="form-input" placeholder="رمز عبور" required>
+            </div>
+
+            <button type="submit" class="form-submit">ورود به سامانه</button>
+        </form>
+
+        <div class="register-link">
+            حساب کاربری ندارید؟ <a href="/register/">ثبت نام کنید</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    console.log('صفحه لاگین لود شد');
+</script>
+<script src="/static/js/api.js"></script>
+<script>
+    console.log('api.js لود شد، AuthAPI:', typeof AuthAPI);
+    if (typeof AuthAPI === 'undefined') {
+        console.error('❌ AuthAPI پیدا نشد!');
+    } else {
+        console.log('✅ AuthAPI پیدا شد!');
+    }
+</script>
+<script src="/static/js/api.js"></script>
+<script>
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value;
+
+        if (!username || !password) {
+            showError('لطفا تمام فیلدها را پر کنید');
+            return;
+        }
+
+        try {
+            const result = await AuthAPI.login(username, password);
+            const userRole = result.role || 'customer';
+
+            showSuccess('ورود موفق! در حال انتقال...');
+
+            setTimeout(() => {
+                const dashboards = {
+                    'admin': '/admin-dashboard/',
+                    'provider': '/provider-services/',
+                    'customer': '/customer-services/'
+                };
+                const dashboardUrl = dashboards[userRole] || '/customer-services/';
+                window.location.href = dashboardUrl;
+            }, 1000);
+
+        } catch (err) {
+            showError(err.message || 'خطا در ارتباط با سرور');
+        }
+    });
+
+    function showError(message) {
+        removeExistingAlerts();
+        const alert = document.createElement('div');
+        alert.className = 'custom-alert custom-alert-error show';
+        alert.textContent = message;
+        document.body.appendChild(alert);
+        setTimeout(() => {
+            alert.classList.remove('show');
+            setTimeout(() => alert.remove(), 300);
+        }, 3000);
+    }
+
+    function showSuccess(message) {
+        removeExistingAlerts();
+        const alert = document.createElement('div');
+        alert.className = 'custom-alert custom-alert-success show';
+        alert.textContent = message;
+        document.body.appendChild(alert);
+        setTimeout(() => {
+            alert.classList.remove('show');
+            setTimeout(() => alert.remove(), 300);
+        }, 2000);
+    }
+
+    function removeExistingAlerts() {
+        document.querySelectorAll('.custom-alert').forEach(alert => alert.remove());
+    }
+</script>
+</body>
+</html>

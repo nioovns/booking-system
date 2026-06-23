@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مدیریت سرویس‌ها | سامانه مدیریت خدمات</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="statics/css/style.css">
+    
+    <style>
+        .menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 98;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .menu-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .sidebar {
+            position: fixed;
+            right: 0;
+            top: 0;
+            width: 70px;
+            height: 100vh;
+            background: rgba(8, 8, 12, 0.96);
+            backdrop-filter: blur(16px);
+            z-index: 99;
+            border-left: 1px solid rgba(255, 255, 255, 0.06);
+            transition: width 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            box-shadow: -8px 0 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+        
+        .sidebar.open {
+            width: 240px;
+        }
+        
+        .sidebar-header {
+            padding: 24px 0 16px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            margin-bottom: 20px;
+        }
+        
+        .menu-toggle-item {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 10px 0;
+            margin: 0 12px;
+            color: rgba(255, 255, 255, 0.7);
+            border-radius: 40px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+        
+        .menu-toggle-item i {
+            font-size: 22px;
+            width: 28px;
+            text-align: center;
+        }
+        
+        .menu-toggle-item .menu-text {
+            font-size: 13px;
+            font-weight: 500;
+            display: none;
+            letter-spacing: 0.3px;
+        }
+        
+        .sidebar.open .menu-toggle-item {
+            justify-content: flex-start;
+            padding: 10px 16px;
+            margin: 0 12px;
+        }
+        
+        .sidebar.open .menu-toggle-item .menu-text {
+            display: inline;
+        }
+        
+        .menu-toggle-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: white;
+        }
+        
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .sidebar-menu li {
+            margin: 4px 0;
+        }
+        
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 10px 0;
+            margin: 0 12px;
+            color: rgba(255, 255, 255, 0.6);
+            text-decoration: none;
+            border-radius: 40px;
+            transition: all 0.25s ease;
+            white-space: nowrap;
+            font-size: 14px;
+            font-weight: 450;
+        }
+        
+        .sidebar-menu a i {
+            font-size: 22px;
+            width: 28px;
+            text-align: center;
+        }
+        
+        .sidebar-menu a .menu-text {
+            display: none;
+            font-size: 13px;
+        }
+        
+        .sidebar.open .sidebar-menu a {
+            justify-content: flex-start;
+            padding: 10px 16px;
+            margin: 0 12px;
+        }
+        
+        .sidebar.open .sidebar-menu a .menu-text {
+            display: inline;
+        }
+        
+        .sidebar-menu a:hover {
+            background: rgba(255, 255, 255, 0.06);
+            color: white;
+        }
+        
+        .sidebar-menu a.active {
+            background: rgba(37, 99, 235, 0.15);
+            color: white;
+        }
+        
+        .sidebar-menu a.active i {
+            background: #2563EB;
+            color: white;
+            border-radius: 50%;
+            padding: 6px;
+            width: 34px;
+            margin-right: -3px;
+        }
+        
+        .sidebar.open .sidebar-menu a.active i {
+            margin-right: 0;
+        }
+        
+        .main-content {
+            margin-right: 70px;
+            padding: 24px 32px;
+            min-height: 100vh;
+            transition: margin-right 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+        }
+        
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        
+        .page-title {
+            color: white;
+            font-size: 26px;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .user-name {
+            color: rgba(255, 255, 255, 0.85);
+            font-weight: 500;
+            font-size: 14px;
+        }
+        
+        .btn-icon {
+            background: rgba(255, 255, 255, 0.06);
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.7);
+            padding: 8px 12px;
+            border-radius: 30px;
+            transition: all 0.2s;
+        }
+        
+        .btn-icon:hover {
+            background: rgba(255, 255, 255, 0.12);
+            color: white;
+        }
+        
+        .services-container {
+            background: rgba(255, 255, 255, 0.94);
+            backdrop-filter: blur(8px);
+            border-radius: 20px;
+            padding: 20px;
+        }
+        
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .table-header h2 {
+            color: #1F2937;
+            font-size: 18px;
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        .btn-add {
+            background: #2563EB;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            font-family: 'Vazirmatn';
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-add:hover {
+            background: #1D4ED8;
+            transform: translateY(-1px);
+        }
+        
+        .service-card-item {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border: 1px solid #E5E7EB;
+            transition: all 0.2s;
+        }
+        
+        .service-card-item:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+        
+        .service-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .service-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1F2937;
+        }
+        
+        .service-status {
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .status-active {
+            background: #D1FAE5;
+            color: #059669;
+        }
+        
+        .status-inactive {
+            background: #FEE2E2;
+            color: #DC2626;
+        }
+        
+        .service-image {
+            width: 80px;
+            height: 80px;
+            border-radius: 12px;
+            object-fit: cover;
+            background: #F3F4F6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 15px;
+        }
+        
+        .service-image-placeholder {
+            width: 80px;
+            height: 80px;
+            border-radius: 12px;
+            background: #F3F4F6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #9CA3AF;
+            font-size: 30px;
+            position: relative;
+        }
+        
+        .service-image-placeholder::after {
+            content: '';
+            position: absolute;
+            width: 60%;
+            height: 2px;
+            background: #9CA3AF;
+            transform: rotate(45deg);
+        }
+        
+        .service-details {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 12px;
+            margin-top: 10px;
+        }
+        
+        .detail-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #6B7280;
+        }
+        
+        .detail-item i {
+            width: 20px;
+            color: #2563EB;
+        }
+        
+        .service-description {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #E5E7EB;
+            font-size: 13px;
+            color: #4B5563;
+            line-height: 1.5;
+        }
+        
+        .service-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 15px;
+            justify-content: flex-end;
+        }
+        
+        .btn-edit, .btn-delete, .btn-slots {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+        
+        .btn-edit {
+            color: #2563EB;
+        }
+        
+        .btn-edit:hover {
+            background: #EFF6FF;
+        }
+        
+        .btn-delete {
+            color: #EF4444;
+        }
+        
+        .btn-delete:hover {
+            background: #FEE2E2;
+        }
+        
+        .btn-slots {
+            color: #F59E0B;
+        }
+        
+        .btn-slots:hover {
+            background: #FEF3C7;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 24px;
+            padding: 28px;
+            width: 90%;
+            max-width: 550px;
+            max-height: none;
+            overflow-y: visible;
+            position: relative;
+        }
+        
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            left: 20px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #9CA3AF;
+            cursor: pointer;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-close:hover {
+            background: #F3F4F6;
+            color: #4B5563;
+        }
+        
+        .modal-content h3 {
+            margin-bottom: 20px;
+            color: #1F2937;
+            font-size: 20px;
+            padding-left: 40px;
+        }
+        
+        .modal-content input, .modal-content select, .modal-content textarea {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border: 1px solid #E5E7EB;
+            border-radius: 12px;
+            font-family: 'Vazirmatn';
+            font-size: 14px;
+        }
+        
+        .modal-content textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        .modal-content input:focus, .modal-content select:focus, .modal-content textarea:focus {
+            outline: none;
+            border-color: #2563EB;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .image-upload-area {
+            border: 2px dashed #E5E7EB;
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin: 10px 0;
+        }
+        
+        .image-upload-area:hover {
+            border-color: #2563EB;
+            background: #EFF6FF;
+        }
+        
+        .image-preview {
+            width: 100px;
+            height: 100px;
+            border-radius: 12px;
+            object-fit: cover;
+            margin: 10px auto;
+        }
+        
+        .image-preview-placeholder {
+            width: 100px;
+            height: 100px;
+            border-radius: 12px;
+            background: #F3F4F6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 10px auto;
+            color: #9CA3AF;
+            font-size: 40px;
+            position: relative;
+        }
+        
+        .image-preview-placeholder::after {
+            content: '';
+            position: absolute;
+            width: 50%;
+            height: 2px;
+            background: #9CA3AF;
+            transform: rotate(45deg);
+        }
+        
+        .slots-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 15px 0;
+        }
+        
+        .slot-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #E5E7EB;
+        }
+        
+        .slot-time {
+            font-size: 14px;
+            color: #1F2937;
+        }
+        
+        .btn-delete-slot {
+            background: none;
+            border: none;
+            color: #EF4444;
+            cursor: pointer;
+            padding: 5px 10px;
+        }
+        
+        .add-slot-form {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .add-slot-form input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #E5E7EB;
+            border-radius: 12px;
+        }
+        
+        @media (max-width: 800px) {
+            .main-content {
+                margin-right: 0;
+                padding: 16px;
+            }
+            .sidebar {
+                right: -70px;
+            }
+            .sidebar.open {
+                right: 0;
+            }
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 0;
+            }
+            .service-details {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="glass-header">
+        <div class="header-title">پنل ارائه‌دهنده خدمات</div>
+    </header>
+    
+    <div class="menu-overlay" id="menuOverlay"></div>
+    
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="menu-toggle-item" id="menuToggleBtn">
+                <i class="fas fa-bars"></i>
+                <span class="menu-text">منو</span>
+            </div>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="provider-services.html" class="active"><i class="fas fa-concierge-bell"></i><span class="menu-text"> سرویس‌ها</span></a></li>
+            <li><a href="provider-timeslots.html"><i class="fas fa-clock"></i><span class="menu-text"> زمان‌بندی</span></a></li>
+            <li><a href="provider-bookings.html"><i class="fas fa-calendar-check"></i><span class="menu-text"> رزروها</span></a></li>
+            <li><a href="provider-profile.html"><i class="fas fa-user"></i><span class="menu-text"> پروفایل</span></a></li>
+        </ul>
+    </div>
+    
+    <div class="main-content">
+        <div class="dashboard-header">
+            <h1 class="page-title">مدیریت سرویس‌ها</h1>
+            <div class="user-info">
+                <span class="user-name" id="username">ارائه‌دهنده</span>
+                <button class="btn-icon" id="profileBtn" title="پروفایل"><i class="fas fa-user-circle"></i></button>
+                <button class="btn-icon" id="logoutBtn" title="خروج"><i class="fas fa-sign-out-alt"></i></button>
+            </div>
+        </div>
+        
+        <div class="services-container">
+            <div class="table-header">
+                <h2><i class="fas fa-list"></i> لیست سرویس‌های من</h2>
+                <button class="btn-add" id="addServiceBtn">
+                    <i class="fas fa-plus"></i> افزودن سرویس جدید
+                </button>
+            </div>
+            <div id="servicesList">
+                <div style="text-align: center; padding: 40px;">در حال بارگذاری...</div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="serviceModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeServiceModal()">×</button>
+            <h3 id="modalTitle">افزودن سرویس جدید</h3>
+            
+            <div class="image-upload-area" id="imageUploadArea">
+                <div id="modalImagePreview">
+                    <div class="image-preview-placeholder">
+                        <i class="fas fa-camera"></i>
+                    </div>
+                </div>
+                <p style="font-size: 12px; color: #6B7280; margin-top: 8px;">برای آپلود تصویر کلیک کنید</p>
+                <input type="file" id="serviceImage" accept="image/*" style="display: none;">
+            </div>
+            
+            <input type="text" id="serviceName" placeholder="نام سرویس">
+            
+            <div class="form-row">
+                <select id="serviceCategory">
+                    <option value="تعمیرات">تعمیرات</option>
+                    <option value="زیبایی">زیبایی</option>
+                    <option value="آموزش">آموزش</option>
+                    <option value="نظافتی">خدمات نظافتی</option>
+                    <option value="خودرو">خدمات خودرو</option>
+                    <option value="سایر">سایر</option>
+                </select>
+                <select id="serviceStatus">
+                    <option value="active">فعال</option>
+                    <option value="inactive">غیرفعال</option>
+                </select>
+            </div>
+            
+            <div class="form-row">
+                <input type="number" id="servicePrice" placeholder="قیمت (تومان)">
+                <input type="number" id="serviceDuration" placeholder="مدت زمان (دقیقه)">
+            </div>
+            
+            <textarea id="serviceDescription" placeholder="توضیحات سرویس"></textarea>
+            
+            <div class="modal-buttons">
+                <button id="saveServiceBtn" class="btn-primary" style="flex:1;">ذخیره</button>
+                <button id="closeModalBtn" class="btn-secondary" style="flex:1;">انصراف</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="slotsModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeSlotsModal()">×</button>
+            <h3 id="slotsModalTitle">مدیریت زمان‌بندی</h3>
+            <div id="slotsList" class="slots-list">
+                <div style="text-align: center; padding: 20px;">در حال بارگذاری...</div>
+            </div>
+            <div class="add-slot-form">
+                <input type="time" id="newSlotTime" placeholder="ساعت">
+                <button id="addSlotBtn" class="btn-primary" style="padding: 10px 20px;">افزودن</button>
+            </div>
+            <div class="modal-buttons">
+                <button id="closeSlotsModalBtn" class="btn-secondary" style="flex:1;">بستن</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="/static/js/api.js"></script>
+    <script>
+        const sidebar = document.getElementById('sidebar');
+        const menuOverlay = document.getElementById('menuOverlay');
+        const menuToggleBtn = document.getElementById('menuToggleBtn');
+        
+        function toggleMenu() {
+            if (sidebar.classList.contains('open')) {
+                sidebar.classList.remove('open');
+                menuOverlay.classList.remove('active');
+                document.body.style.overflow = '';
+            } else {
+                sidebar.classList.add('open');
+                menuOverlay.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+        
+        if (menuToggleBtn) menuToggleBtn.addEventListener('click', toggleMenu);
+        if (menuOverlay) menuOverlay.addEventListener('click', toggleMenu);
+        
+        const profileBtn = document.getElementById('profileBtn');
+        if (profileBtn) {
+            profileBtn.addEventListener('click', () => {
+                window.location.href = 'provider-profile.html';
+            });
+        }
+        
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', () => {
+                AuthAPI.logout();
+            });
+        }
+        
+        const usernameSpan = document.getElementById('username');
+        if (usernameSpan) {
+            usernameSpan.innerText = localStorage.getItem('username') || 'ارائه‌دهنده';
+        }
+        
+        let currentServiceId = null;
+        let selectedImageFile = null;
+        
+        window.closeServiceModal = () => {
+            document.getElementById('serviceModal').classList.remove('active');
+        };
+        
+        window.closeSlotsModal = () => {
+            document.getElementById('slotsModal').classList.remove('active');
+        };
+        
+        async function loadServices() {
+            try {
+                const services = await ProviderAPI.getMyServices();
+                if (services && services.length > 0) {
+                    document.getElementById('servicesList').innerHTML = services.map(service => `
+                        <div class="service-card-item">
+                            <div class="service-header">
+                                <div class="service-title">${service.name}</div>
+                                <span class="service-status ${service.status === 'active' ? 'status-active' : 'status-inactive'}">${service.status === 'active' ? 'فعال' : 'غیرفعال'}</span>
+                            </div>
+                            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                                <div>
+                                    ${service.image ? 
+                                        `<img src="${service.image}" class="service-image" alt="${service.name}">` : 
+                                        `<div class="service-image-placeholder"><i class="fas fa-camera"></i></div>`
+                                    }
+                                </div>
+                                <div style="flex: 1;">
+                                    <div class="service-details">
+                                        <div class="detail-item"><i class="fas fa-tag"></i> دسته‌بندی: ${service.category || '-'}</div>
+                                        <div class="detail-item"><i class="fas fa-clock"></i> مدت زمان: ${service.duration || '-'} دقیقه</div>
+                                        <div class="detail-item"><i class="fas fa-credit-card"></i> قیمت: ${(service.price || 0).toLocaleString()} تومان</div>
+                                    </div>
+                                    <div class="service-description">
+                                        ${service.description || 'توضیحاتی برای این سرویس ثبت نشده است.'}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="service-actions">
+                                <button class="btn-slots" onclick="manageSlots(${service.id})" title="زمان‌بندی"><i class="fas fa-clock"></i> زمان‌بندی</button>
+                                <button class="btn-edit" onclick="editService(${service.id})" title="ویرایش"><i class="fas fa-edit"></i> ویرایش</button>
+                                <button class="btn-delete" onclick="deleteService(${service.id})" title="حذف"><i class="fas fa-trash"></i> حذف</button>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    document.getElementById('servicesList').innerHTML = '<div style="text-align: center; padding: 40px;">هیچ سرویسی یافت نشد</div>';
+                }
+            } catch(err) {
+                showError('خطا در بارگذاری سرویس‌ها');
+                console.error(err);
+            }
+        }
+        
+        const imageUploadArea = document.getElementById('imageUploadArea');
+        const imageInput = document.getElementById('serviceImage');
+        const modalImagePreview = document.getElementById('modalImagePreview');
+        
+        if (imageUploadArea) {
+            imageUploadArea.addEventListener('click', () => {
+                imageInput.click();
+            });
+        }
+        
+        if (imageInput) {
+            imageInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    selectedImageFile = file;
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        modalImagePreview.innerHTML = `<img src="${event.target.result}" class="image-preview" alt="پیش‌نمایش">`;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+        
+        function resetImagePreview() {
+            selectedImageFile = null;
+            modalImagePreview.innerHTML = `<div class="image-preview-placeholder"><i class="fas fa-camera"></i></div>`;
+        }
+        
+        document.getElementById('addServiceBtn').addEventListener('click', () => {
+            currentServiceId = null;
+            document.getElementById('modalTitle').innerText = 'افزودن سرویس جدید';
+            document.getElementById('serviceName').value = '';
+            document.getElementById('serviceCategory').value = 'تعمیرات';
+            document.getElementById('serviceDescription').value = '';
+            document.getElementById('servicePrice').value = '';
+            document.getElementById('serviceDuration').value = '';
+            document.getElementById('serviceStatus').value = 'active';
+            resetImagePreview();
+            document.getElementById('serviceModal').classList.add('active');
+        });
+        
+        document.getElementById('closeModalBtn').addEventListener('click', () => {
+            document.getElementById('serviceModal').classList.remove('active');
+        });
+        
+        document.getElementById('saveServiceBtn').addEventListener('click', async () => {
+            const name = document.getElementById('serviceName').value.trim();
+            const category = document.getElementById('serviceCategory').value;
+            const description = document.getElementById('serviceDescription').value.trim();
+            const price = parseInt(document.getElementById('servicePrice').value);
+            const duration = parseInt(document.getElementById('serviceDuration').value);
+            const status = document.getElementById('serviceStatus').value;
+            
+            if (!name) {
+                showError('لطفاً نام سرویس را وارد کنید');
+                return;
+            }
+            if (!price || price <= 0) {
+                showError('لطفاً قیمت معتبر وارد کنید');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('name', name);
+            formData.append('category', category);
+            formData.append('description', description);
+            formData.append('price', price);
+            formData.append('duration', duration);
+            formData.append('status', status);
+            if (selectedImageFile) {
+                formData.append('image', selectedImageFile);
+            }
+            
+            try {
+                if (currentServiceId) {
+                    await ProviderAPI.updateService(currentServiceId, formData);
+                    showSuccess('سرویس با موفقیت ویرایش شد');
+                } else {
+                    await ProviderAPI.createService(formData);
+                    showSuccess('سرویس با موفقیت اضافه شد');
+                }
+                document.getElementById('serviceModal').classList.remove('active');
+                loadServices();
+            } catch(err) {
+                showError(err.message);
+            }
+        });
+        
+        window.editService = async (id) => {
+            try {
+                const services = await ProviderAPI.getMyServices();
+                const service = services.find(s => s.id === id);
+                if (service) {
+                    currentServiceId = id;
+                    document.getElementById('modalTitle').innerText = 'ویرایش سرویس';
+                    document.getElementById('serviceName').value = service.name;
+                    document.getElementById('serviceCategory').value = service.category || 'تعمیرات';
+                    document.getElementById('serviceDescription').value = service.description || '';
+                    document.getElementById('servicePrice').value = service.price;
+                    document.getElementById('serviceDuration').value = service.duration || '';
+                    document.getElementById('serviceStatus').value = service.status;
+                    resetImagePreview();
+                    if (service.image) {
+                        modalImagePreview.innerHTML = `<img src="${service.image}" class="image-preview" alt="پیش‌نمایش">`;
+                    }
+                    document.getElementById('serviceModal').classList.add('active');
+                }
+            } catch(err) {
+                showError('خطا در بارگذاری اطلاعات سرویس');
+            }
+        };
+        
+        window.deleteService = async (id) => {
+            if (confirm('آیا از حذف این سرویس اطمینان دارید؟')) {
+                try {
+                    await ProviderAPI.deleteService(id);
+                    showSuccess('سرویس با موفقیت حذف شد');
+                    loadServices();
+                } catch(err) {
+                    showError(err.message);
+                }
+            }
+        };
+        
+        let currentSlotServiceId = null;
+        
+        window.manageSlots = async (serviceId) => {
+            currentSlotServiceId = serviceId;
+            document.getElementById('slotsModalTitle').innerHTML = `مدیریت زمان‌بندی`;
+            document.getElementById('slotsModal').classList.add('active');
+            await loadSlots(serviceId);
+        };
+        
+        async function loadSlots(serviceId) {
+            try {
+                const slots = await ProviderAPI.getTimeSlots(serviceId);
+                if (slots && slots.length > 0) {
+                    document.getElementById('slotsList').innerHTML = slots.map(slot => `
+                        <div class="slot-item">
+                            <span class="slot-time">${slot.time}</span>
+                            <button class="btn-delete-slot" onclick="deleteSlot(${slot.id})"><i class="fas fa-trash"></i></button>
+                        </div>
+                    `).join('');
+                } else {
+                    document.getElementById('slotsList').innerHTML = '<div style="text-align: center; padding: 20px;">هیچ زمانی تعریف نشده است</div>';
+                }
+            } catch(err) {
+                showError('خطا در بارگذاری زمان‌بندی');
+            }
+        }
+        
+        window.deleteSlot = async (slotId) => {
+            if (confirm('آیا از حذف این زمان اطمینان دارید؟')) {
+                try {
+                    await ProviderAPI.deleteTimeSlot(slotId);
+                    showSuccess('زمان با موفقیت حذف شد');
+                    await loadSlots(currentSlotServiceId);
+                } catch(err) {
+                    showError(err.message);
+                }
+            }
+        };
+        
+        document.getElementById('addSlotBtn').addEventListener('click', async () => {
+            const time = document.getElementById('newSlotTime').value;
+            if (!time) {
+                showError('لطفاً ساعت را وارد کنید');
+                return;
+            }
+            try {
+                await ProviderAPI.addTimeSlot(currentSlotServiceId, { time, available: true });
+                showSuccess('زمان با موفقیت اضافه شد');
+                document.getElementById('newSlotTime').value = '';
+                await loadSlots(currentSlotServiceId);
+            } catch(err) {
+                showError(err.message);
+            }
+        });
+        
+        document.getElementById('closeSlotsModalBtn').addEventListener('click', () => {
+            document.getElementById('slotsModal').classList.remove('active');
+        });
+        
+        loadServices();
+    </script>
+</body>
+</html>

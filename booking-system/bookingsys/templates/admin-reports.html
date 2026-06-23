@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>گزارشات | سامانه مدیریت خدمات</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <style>
+        .menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 98;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .menu-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .sidebar {
+            position: fixed;
+            right: 0;
+            top: 0;
+            width: 70px;
+            height: 100vh;
+            background: rgba(8, 8, 12, 0.96);
+            backdrop-filter: blur(16px);
+            z-index: 99;
+            border-left: 1px solid rgba(255, 255, 255, 0.06);
+            transition: width 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            box-shadow: -8px 0 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        .sidebar.open {
+            width: 240px;
+        }
+
+        .sidebar-header {
+            padding: 24px 0 16px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            margin-bottom: 20px;
+        }
+
+        .menu-toggle-item {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 10px 0;
+            margin: 0 12px;
+            color: rgba(255, 255, 255, 0.7);
+            border-radius: 40px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .menu-toggle-item i {
+            font-size: 22px;
+            width: 28px;
+            text-align: center;
+        }
+
+        .menu-toggle-item .menu-text {
+            font-size: 13px;
+            font-weight: 500;
+            display: none;
+            letter-spacing: 0.3px;
+        }
+
+        .sidebar.open .menu-toggle-item {
+            justify-content: flex-start;
+            padding: 10px 16px;
+            margin: 0 12px;
+        }
+
+        .sidebar.open .menu-toggle-item .menu-text {
+            display: inline;
+        }
+
+        .menu-toggle-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: white;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+        }
+
+        .sidebar-menu li {
+            margin: 4px 0;
+        }
+
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 10px 0;
+            margin: 0 12px;
+            color: rgba(255, 255, 255, 0.6);
+            text-decoration: none;
+            border-radius: 40px;
+            transition: all 0.25s ease;
+            white-space: nowrap;
+            font-size: 14px;
+            font-weight: 450;
+        }
+
+        .sidebar-menu a i {
+            font-size: 22px;
+            width: 28px;
+            text-align: center;
+        }
+
+        .sidebar-menu a .menu-text {
+            display: none;
+            font-size: 13px;
+        }
+
+        .sidebar.open .sidebar-menu a {
+            justify-content: flex-start;
+            padding: 10px 16px;
+            margin: 0 12px;
+        }
+
+        .sidebar.open .sidebar-menu a .menu-text {
+            display: inline;
+        }
+
+        .sidebar-menu a:hover {
+            background: rgba(255, 255, 255, 0.06);
+            color: white;
+        }
+
+        .sidebar-menu a.active {
+            background: rgba(37, 99, 235, 0.15);
+            color: white;
+        }
+
+        .sidebar-menu a.active i {
+            background: #2563EB;
+            color: white;
+            border-radius: 50%;
+            padding: 6px;
+            width: 34px;
+            margin-right: -3px;
+        }
+
+        .sidebar.open .sidebar-menu a.active i {
+            margin-right: 0;
+        }
+
+        .main-content {
+            margin-right: 70px;
+            padding: 24px 32px;
+            min-height: 100vh;
+            transition: margin-right 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .page-title {
+            color: white;
+            font-size: 26px;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .user-name {
+            color: rgba(255, 255, 255, 0.85);
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .btn-icon {
+            background: rgba(255, 255, 255, 0.06);
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.7);
+            padding: 8px 12px;
+            border-radius: 30px;
+            transition: all 0.2s;
+        }
+
+        .btn-icon:hover {
+            background: rgba(255, 255, 255, 0.12);
+            color: white;
+        }
+
+        /* گزارشات */
+        .reports-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .report-card {
+            background: rgba(255, 255, 255, 0.94);
+            backdrop-filter: blur(8px);
+            border-radius: 20px;
+            padding: 25px;
+            transition: all 0.25s;
+        }
+
+        .report-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+        }
+
+        .report-card h3 {
+            color: #1F2937;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            border-right: 3px solid #2563EB;
+            padding-right: 12px;
+        }
+
+        .report-stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #F9FAFB;
+            border-radius: 16px;
+        }
+
+        .report-stat {
+            text-align: center;
+        }
+
+        .report-stat-label {
+            font-size: 12px;
+            color: #6B7280;
+            margin-bottom: 5px;
+        }
+
+        .report-stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #0C1844;
+        }
+
+        .btn-pdf {
+            width: 100%;
+            background: #00070e;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 40px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Vazirmatn';
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-pdf:hover {
+            background: #146ef5;
+            transform: translateY(-2px);
+        }
+
+        .full-width-card {
+            grid-column: span 2;
+        }
+
+        .bookings-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .booking-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #E5E7EB;
+        }
+
+        .booking-item:last-child {
+            border-bottom: none;
+        }
+
+        .booking-info {
+            flex: 1;
+        }
+
+        .booking-service {
+            font-weight: 600;
+            color: #1F2937;
+        }
+
+        .booking-detail {
+            font-size: 12px;
+            color: #6B7280;
+            margin-top: 4px;
+        }
+
+        .booking-status {
+            font-size: 12px;
+            padding: 3px 10px;
+            border-radius: 20px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 24px;
+            padding: 28px;
+            width: 90%;
+            max-width: 380px;
+        }
+
+        .modal-content h3 {
+            margin-bottom: 20px;
+            color: #1F2937;
+            font-size: 20px;
+        }
+
+        .modal-content input {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border: 1px solid #E5E7EB;
+            border-radius: 12px;
+            font-family: 'Vazirmatn';
+            font-size: 14px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 800px) {
+            .main-content {
+                margin-right: 0;
+                padding: 16px;
+            }
+
+            .sidebar {
+                right: -70px;
+            }
+
+            .sidebar.open {
+                right: 0;
+            }
+
+            .reports-container {
+                grid-template-columns: 1fr;
+            }
+
+            .full-width-card {
+                grid-column: span 1;
+            }
+        }
+    </style>
+</head>
+<body>
+<header class="glass-header">
+    <div class="header-title">پنل مدیریت سیستم</div>
+</header>
+
+<div class="menu-overlay" id="menuOverlay"></div>
+
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <div class="menu-toggle-item" id="menuToggleBtn">
+            <i class="fas fa-bars"></i>
+            <span class="menu-text">منو</span>
+        </div>
+    </div>
+    <ul class="sidebar-menu">
+        <li><a href="/admin-dashboard/"><i class="fas fa-chart-line"></i><span class="menu-text"> داشبورد</span></a>
+        </li>
+        <li><a href="/admin-users/"><i class="fas fa-users"></i><span class="menu-text"> کاربران</span></a></li>
+        <li><a href="/admin-services/"><i class="fas fa-concierge-bell"></i><span class="menu-text"> خدمات</span></a>
+        </li>
+        <li><a href="/admin-bookings/"><i class="fas fa-calendar-check"></i><span class="menu-text"> رزروها</span></a>
+        </li>
+        <li><a href="/admin-reports/" class="active"><i class="fas fa-chart-bar"></i><span
+                class="menu-text"> گزارشات</span></a></li>
+    </ul>
+</div>
+
+<div class="main-content">
+    <div class="dashboard-header">
+        <h1 class="page-title">گزارشات آماری</h1>
+        <div class="user-info">
+            <span class="user-name" id="username">ادمین</span>
+            <button class="btn-icon" id="changePasswordBtn" title="تغییر رمز"><i class="fas fa-key"></i></button>
+            <button class="btn-icon" id="logoutBtn" title="خروج"><i class="fas fa-sign-out-alt"></i></button>
+        </div>
+    </div>
+
+    <div class="reports-container" id="reportsContainer">
+        <div class="report-card">
+            <h3><i class="fas fa-credit-card"></i> گزارش درآمد</h3>
+            <div class="report-stats">
+                <div class="report-stat">
+                    <div class="report-stat-label">کل درآمد</div>
+                    <div class="report-stat-value" id="totalRevenue">0 تومان</div>
+                </div>
+                <div class="report-stat">
+                    <div class="report-stat-label">درآمد این ماه</div>
+                    <div class="report-stat-value" id="monthRevenue">0 تومان</div>
+                </div>
+            </div>
+            <button class="btn-pdf" onclick="exportRevenuePDF()">
+                <i class="fas fa-file-pdf"></i> خروجی PDF گزارش درآمد
+            </button>
+        </div>
+
+        <div class="report-card">
+            <h3><i class="fas fa-calendar-check"></i> گزارش رزروها</h3>
+            <div class="report-stats">
+                <div class="report-stat">
+                    <div class="report-stat-label">کل رزروها</div>
+                    <div class="report-stat-value" id="totalBookings">0</div>
+                </div>
+                <div class="report-stat">
+                    <div class="report-stat-label">رزروهای تایید شده</div>
+                    <div class="report-stat-value" id="confirmedBookings">0</div>
+                </div>
+                <div class="report-stat">
+                    <div class="report-stat-label">رزروهای در انتظار</div>
+                    <div class="report-stat-value" id="pendingBookings">0</div>
+                </div>
+            </div>
+            <button class="btn-pdf" onclick="exportBookingsPDF()">
+                <i class="fas fa-file-pdf"></i> خروجی PDF گزارش رزروها
+            </button>
+        </div>
+
+        <div class="report-card">
+            <h3><i class="fas fa-concierge-bell"></i> گزارش سرویس‌ها</h3>
+            <div class="report-stats">
+                <div class="report-stat">
+                    <div class="report-stat-label">کل سرویس‌ها</div>
+                    <div class="report-stat-value" id="totalServices">0</div>
+                </div>
+                <div class="report-stat">
+                    <div class="report-stat-label">سرویس‌های فعال</div>
+                    <div class="report-stat-value" id="activeServices">0</div>
+                </div>
+                <div class="report-stat">
+                    <div class="report-stat-label">سرویس‌های غیرفعال</div>
+                    <div class="report-stat-value" id="inactiveServices">0</div>
+                </div>
+            </div>
+            <button class="btn-pdf" onclick="exportServicesPDF()">
+                <i class="fas fa-file-pdf"></i> خروجی PDF گزارش سرویس‌ها
+            </button>
+        </div>
+
+        <div class="report-card">
+            <h3><i class="fas fa-users"></i> گزارش کاربران</h3>
+            <div class="report-stats">
+                <div class="report-stat">
+                    <div class="report-stat-label">کل کاربران</div>
+                    <div class="report-stat-value" id="totalUsers">0</div>
+                </div>
+                <div class="report-stat">
+                    <div class="report-stat-label">مشتریان</div>
+                    <div class="report-stat-value" id="totalCustomers">0</div>
+                </div>
+                <div class="report-stat">
+                    <div class="report-stat-label">ارائه‌دهندگان</div>
+                    <div class="report-stat-value" id="totalProviders">0</div>
+                </div>
+            </div>
+            <button class="btn-pdf" onclick="exportUsersPDF()">
+                <i class="fas fa-file-pdf"></i> خروجی PDF گزارش کاربران
+            </button>
+        </div>
+
+        <div class="report-card full-width-card">
+            <h3><i class="fas fa-clock"></i> آخرین رزروها</h3>
+            <div id="recentBookingsList" class="bookings-list">
+                <div style="text-align: center; padding: 20px;">در حال بارگذاری...</div>
+            </div>
+            <button class="btn-pdf" onclick="exportRecentBookingsPDF()" style="margin-top: 20px;">
+                <i class="fas fa-file-pdf"></i> خروجی PDF آخرین رزروها
+            </button>
+        </div>
+    </div>
+</div>
+
+<div id="changePasswordModal" class="modal">
+    <div class="modal-content">
+        <h3>تغییر رمز عبور</h3>
+        <input type="password" id="oldPassword" placeholder="رمز فعلی">
+        <input type="password" id="newPassword" placeholder="رمز جدید">
+        <input type="password" id="confirmPassword" placeholder="تکرار رمز جدید">
+        <div class="modal-buttons">
+            <button id="submitChangePassword" class="btn-primary" style="flex:1;">تایید</button>
+            <button id="closePwdModalBtn" class="btn-secondary" style="flex:1;">انصراف</button>
+        </div>
+    </div>
+</div>
+
+<script src="/static/js/api.js"></script>
+<script>
+    const sidebar = document.getElementById('sidebar');
+    const menuOverlay = document.getElementById('menuOverlay');
+    const menuToggleBtn = document.getElementById('menuToggleBtn');
+
+    function toggleMenu() {
+        if (sidebar.classList.contains('open')) {
+            sidebar.classList.remove('open');
+            menuOverlay.classList.remove('active');
+            document.body.style.overflow = '';
+        } else {
+            sidebar.classList.add('open');
+            menuOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    menuToggleBtn.addEventListener('click', toggleMenu);
+    menuOverlay.addEventListener('click', toggleMenu);
+
+    let dashboardData = {};
+    let bookingsList = [];
+
+    async function loadAllReports() {
+        try {
+            dashboardData = await AdminAPI.getDashboardData();
+            bookingsList = await AdminAPI.getBookings();
+
+            document.getElementById('totalRevenue').innerText = (dashboardData.totalRevenue || 0).toLocaleString() + ' تومان';
+            document.getElementById('monthRevenue').innerText = (Math.round((dashboardData.totalRevenue || 0) / 3)).toLocaleString() + ' تومان';
+
+            document.getElementById('totalBookings').innerText = dashboardData.totalBookings || 0;
+            const confirmed = bookingsList.filter(b => b.status === 'confirmed').length;
+            const pending = bookingsList.filter(b => b.status === 'pending').length;
+            document.getElementById('confirmedBookings').innerText = confirmed;
+            document.getElementById('pendingBookings').innerText = pending;
+
+            const services = await AdminAPI.getServices();
+            document.getElementById('totalServices').innerText = services.length;
+            document.getElementById('activeServices').innerText = services.filter(s => s.is_active).length;
+            document.getElementById('inactiveServices').innerText = services.filter(s => !s.is_active).length;
+
+            const users = await AdminAPI.getUsers();
+            document.getElementById('totalUsers').innerText = users.length;
+            document.getElementById('totalCustomers').innerText = users.filter(u => u.role === 'customer').length;
+            document.getElementById('totalProviders').innerText = users.filter(u => u.role === 'service_provider').length;
+
+            const recentBookings = bookingsList.slice(0, 10);
+            const statusMap = {
+                'pending': 'در انتظار',
+                'confirmed': 'تایید شده',
+                'rejected': 'رد شده',
+                'canceled': 'لغو شده'
+            };
+            const statusClass = {
+                'pending': '#D97706',
+                'confirmed': '#059669',
+                'rejected': '#DC2626',
+                'canceled': '#6B7280'
+            };
+
+            if (recentBookings.length > 0) {
+                document.getElementById('recentBookingsList').innerHTML = recentBookings.map(booking => `
+                        <div class="booking-item">
+                            <div class="booking-info">
+                                <div class="booking-service">${booking.service_title || booking.serviceName}</div>
+                                <div class="booking-detail">${booking.customer_name || booking.customerName} | ${booking.booking_date || booking.date}</div>
+                            </div>
+                            <span class="booking-status" style="background: ${statusClass[booking.status]}20; color: ${statusClass[booking.status]};">${statusMap[booking.status] || booking.status}</span>
+                        </div>
+                    `).join('');
+            } else {
+                document.getElementById('recentBookingsList').innerHTML = '<div style="text-align: center; padding: 20px;">هیچ رزروی یافت نشد</div>';
+            }
+
+        } catch (err) {
+            showError('خطا در بارگذاری گزارشات');
+            console.error(err);
+        }
+    }
+
+    async function generatePDF(title, content, filename) {
+        const {jsPDF} = window.jspdf;
+        const doc = new jsPDF({unit: 'pt', format: 'a4'});
+
+        doc.setFont('Vazirmatn');
+
+        doc.setFontSize(20);
+        doc.setTextColor(12, 24, 68);
+        doc.text('سامانه مدیریت خدمات', 40, 50);
+
+        doc.setFontSize(14);
+        doc.setTextColor(100, 100, 100);
+        const now = new Date();
+        doc.text(`تاریخ: ${now.toLocaleDateString('fa-IR')}`, 40, 80);
+
+        doc.setFontSize(18);
+        doc.setTextColor(12, 24, 68);
+        doc.text(title, 40, 120);
+
+        doc.setFontSize(12);
+        doc.setTextColor(80, 80, 80);
+
+        let y = 160;
+        for (const line of content) {
+            if (y > 750) {
+                doc.addPage();
+                y = 50;
+            }
+            doc.text(line, 40, y);
+            y += 25;
+        }
+
+        doc.setFontSize(10);
+        doc.setTextColor(150, 150, 150);
+        doc.text('این گزارش به صورت خودکار توسط سامانه مدیریت خدمات تولید شده است.', 40, y + 30);
+
+        doc.save(`${filename}_${now.toISOString().slice(0, 19)}.pdf`);
+    }
+
+    window.exportRevenuePDF = async () => {
+        const content = [
+            `کل درآمد: ${(dashboardData.totalRevenue || 0).toLocaleString()} تومان`,
+            `درآمد این ماه: ${(Math.round((dashboardData.totalRevenue || 0) / 3)).toLocaleString()} تومان`,
+            `تعداد کل رزروها: ${dashboardData.totalBookings || 0}`,
+            `تعداد سرویس‌های فعال: ${dashboardData.activeServices || 0}`,
+            `تعداد کاربران فعال: ${dashboardData.totalUsers || 0}`
+        ];
+        await generatePDF('گزارش درآمد', content, 'revenue_report');
+    };
+
+    window.exportBookingsPDF = async () => {
+        const confirmed = bookingsList.filter(b => b.status === 'confirmed').length;
+        const pending = bookingsList.filter(b => b.status === 'pending').length;
+        const content = [
+            `کل رزروها: ${dashboardData.totalBookings || 0}`,
+            `رزروهای تایید شده: ${confirmed}`,
+            `رزروهای در انتظار: ${pending}`,
+            `رزروهای لغو شده: ${bookingsList.filter(b => b.status === 'canceled').length}`,
+            `رزروهای رد شده: ${bookingsList.filter(b => b.status === 'rejected').length}`
+        ];
+        await generatePDF('گزارش رزروها', content, 'bookings_report');
+    };
+
+    window.exportServicesPDF = async () => {
+        const services = await AdminAPI.getServices();
+        const active = services.filter(s => s.is_active).length;
+        const inactive = services.filter(s => !s.is_active).length;
+        const content = [
+            `کل سرویس‌ها: ${services.length}`,
+            `سرویس‌های فعال: ${active}`,
+            `سرویس‌های غیرفعال: ${inactive}`,
+            ``,
+            `لیست سرویس‌ها:`
+        ];
+        services.forEach(s => {
+            content.push(`- ${s.title} (${s.provider_name || s.providerName}) - ${(s.price || 0).toLocaleString()} تومان - ${s.is_active ? 'فعال' : 'غیرفعال'}`);
+        });
+        await generatePDF('گزارش سرویس‌ها', content, 'services_report');
+    };
+
+    window.exportUsersPDF = async () => {
+        const users = await AdminAPI.getUsers();
+        const customers = users.filter(u => u.role === 'customer').length;
+        const providers = users.filter(u => u.role === 'service_provider').length;
+        const admins = users.filter(u => u.role === 'admin').length;
+        const content = [
+            `کل کاربران: ${users.length}`,
+            `مشتریان: ${customers}`,
+            `ارائه‌دهندگان: ${providers}`,
+            `مدیران: ${admins}`,
+            ``,
+            `لیست کاربران:`
+        ];
+        users.forEach(u => {
+            const roleName = u.role === 'admin' ? 'مدیر' : (u.role === 'service_provider' ? 'ارائه‌دهنده' : 'مشتری');
+            content.push(`- ${u.username} (${roleName}) - تاریخ عضویت: ${u.date_joined || '-'}`);
+        });
+        await generatePDF('گزارش کاربران', content, 'users_report');
+    };
+
+    window.exportRecentBookingsPDF = async () => {
+        const statusMap = {
+            'pending': 'در انتظار',
+            'confirmed': 'تایید شده',
+            'rejected': 'رد شده',
+            'canceled': 'لغو شده'
+        };
+        const content = [
+            `لیست آخرین رزروها (${bookingsList.length} رزرو):`,
+            ``
+        ];
+        bookingsList.slice(0, 20).forEach(b => {
+            content.push(`- سرویس: ${b.service_title || b.serviceName} | مشتری: ${b.customer_name || b.customerName} | تاریخ: ${b.booking_date || b.date} | وضعیت: ${statusMap[b.status] || b.status}`);
+        });
+        await generatePDF('گزارش آخرین رزروها', content, 'recent_bookings_report');
+    };
+
+    document.getElementById('username').innerText = localStorage.getItem('username') || 'ادمین';
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+        AuthAPI.logout();
+    });
+
+    const pwdModal = document.getElementById('changePasswordModal');
+    document.getElementById('changePasswordBtn').addEventListener('click', () => pwdModal.classList.add('active'));
+    document.getElementById('closePwdModalBtn').addEventListener('click', () => pwdModal.classList.remove('active'));
+
+    document.getElementById('submitChangePassword').addEventListener('click', async () => {
+        const oldPass = document.getElementById('oldPassword').value;
+        const newPass = document.getElementById('newPassword').value;
+        const confirmPass = document.getElementById('confirmPassword').value;
+        try {
+            await AuthAPI.changePassword(oldPass, newPass, confirmPass);
+            showSuccess('رمز با موفقیت تغییر کرد');
+            pwdModal.classList.remove('active');
+            document.getElementById('oldPassword').value = '';
+            document.getElementById('newPassword').value = '';
+            document.getElementById('confirmPassword').value = '';
+        } catch (err) {
+            showError(err.message);
+        }
+    });
+
+    loadAllReports();
+</script>
+</body>
+</html>

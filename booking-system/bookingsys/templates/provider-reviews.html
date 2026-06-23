@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظرات و امتیازات | سامانه مدیریت خدمات</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="statics/css/style.css">
+    
+    <style>
+        .menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 98;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .menu-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .sidebar {
+            position: fixed;
+            right: 0;
+            top: 0;
+            width: 70px;
+            height: 100vh;
+            background: rgba(8, 8, 12, 0.96);
+            backdrop-filter: blur(16px);
+            z-index: 99;
+            border-left: 1px solid rgba(255, 255, 255, 0.06);
+            transition: width 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            box-shadow: -8px 0 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+        
+        .sidebar.open {
+            width: 240px;
+        }
+        
+        .sidebar-header {
+            padding: 24px 0 16px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            margin-bottom: 20px;
+        }
+        
+        .menu-toggle-item {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 10px 0;
+            margin: 0 12px;
+            color: rgba(255, 255, 255, 0.7);
+            border-radius: 40px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+        
+        .menu-toggle-item i {
+            font-size: 22px;
+            width: 28px;
+            text-align: center;
+        }
+        
+        .menu-toggle-item .menu-text {
+            font-size: 13px;
+            font-weight: 500;
+            display: none;
+            letter-spacing: 0.3px;
+        }
+        
+        .sidebar.open .menu-toggle-item {
+            justify-content: flex-start;
+            padding: 10px 16px;
+            margin: 0 12px;
+        }
+        
+        .sidebar.open .menu-toggle-item .menu-text {
+            display: inline;
+        }
+        
+        .menu-toggle-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: white;
+        }
+        
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .sidebar-menu li {
+            margin: 4px 0;
+        }
+        
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 10px 0;
+            margin: 0 12px;
+            color: rgba(255, 255, 255, 0.6);
+            text-decoration: none;
+            border-radius: 40px;
+            transition: all 0.25s ease;
+            white-space: nowrap;
+            font-size: 14px;
+            font-weight: 450;
+        }
+        
+        .sidebar-menu a i {
+            font-size: 22px;
+            width: 28px;
+            text-align: center;
+        }
+        
+        .sidebar-menu a .menu-text {
+            display: none;
+            font-size: 13px;
+        }
+        
+        .sidebar.open .sidebar-menu a {
+            justify-content: flex-start;
+            padding: 10px 16px;
+            margin: 0 12px;
+        }
+        
+        .sidebar.open .sidebar-menu a .menu-text {
+            display: inline;
+        }
+        
+        .sidebar-menu a:hover {
+            background: rgba(255, 255, 255, 0.06);
+            color: white;
+        }
+        
+        .sidebar-menu a.active {
+            background: rgba(37, 99, 235, 0.15);
+            color: white;
+        }
+        
+        .sidebar-menu a.active i {
+            background: #2563EB;
+            color: white;
+            border-radius: 50%;
+            padding: 6px;
+            width: 34px;
+            margin-right: -3px;
+        }
+        
+        .sidebar.open .sidebar-menu a.active i {
+            margin-right: 0;
+        }
+        
+        .main-content {
+            margin-right: 70px;
+            padding: 24px 32px;
+            min-height: 100vh;
+            transition: margin-right 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+        }
+        
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        
+        .page-title {
+            color: white;
+            font-size: 26px;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .user-name {
+            color: rgba(255, 255, 255, 0.85);
+            font-weight: 500;
+            font-size: 14px;
+        }
+        
+        .btn-icon {
+            background: rgba(255, 255, 255, 0.06);
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.7);
+            padding: 8px 12px;
+            border-radius: 30px;
+            transition: all 0.2s;
+        }
+        
+        .btn-icon:hover {
+            background: rgba(255, 255, 255, 0.12);
+            color: white;
+        }
+        
+        .rating-summary {
+            background: rgba(255, 255, 255, 0.94);
+            backdrop-filter: blur(8px);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .average-rating {
+            text-align: center;
+        }
+        
+        .average-number {
+            font-size: 48px;
+            font-weight: 700;
+            color: #0C1844;
+        }
+        
+        .average-stars {
+            font-size: 20px;
+            color: #F59E0B;
+            margin-top: 8px;
+        }
+        
+        .total-reviews {
+            color: #6B7280;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        
+        .rating-distribution {
+            flex: 1;
+            max-width: 300px;
+        }
+        
+        .rating-bar-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .rating-star-label {
+            width: 50px;
+            font-size: 14px;
+            color: #374151;
+        }
+        
+        .rating-bar-bg {
+            flex: 1;
+            height: 8px;
+            background: #E5E7EB;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .rating-bar-fill {
+            height: 100%;
+            background: #F59E0B;
+            border-radius: 4px;
+        }
+        
+        .rating-percent {
+            width: 45px;
+            font-size: 13px;
+            color: #6B7280;
+        }
+        
+        .reviews-container {
+            background: rgba(255, 255, 255, 0.94);
+            backdrop-filter: blur(8px);
+            border-radius: 20px;
+            padding: 20px;
+        }
+        
+        .reviews-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .reviews-header h2 {
+            color: #1F2937;
+            font-size: 18px;
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        .filter-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .filter-select {
+            padding: 8px 16px;
+            border: 1px solid #E5E7EB;
+            border-radius: 30px;
+            background: white;
+            font-family: 'Vazirmatn';
+            font-size: 13px;
+            cursor: pointer;
+        }
+        
+        .reviews-list {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        
+        .review-card {
+            background: #F9FAFB;
+            border-radius: 16px;
+            padding: 18px;
+            margin-bottom: 15px;
+            transition: all 0.2s;
+        }
+        
+        .review-card:hover {
+            background: #F3F4F6;
+        }
+        
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .review-customer {
+            font-weight: 600;
+            color: #1F2937;
+            font-size: 15px;
+        }
+        
+        .review-stars {
+            color: #F59E0B;
+            font-size: 14px;
+        }
+        
+        .review-date {
+            font-size: 12px;
+            color: #9CA3AF;
+        }
+        
+        .review-comment {
+            color: #4B5563;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #E5E7EB;
+        }
+        
+        .review-service {
+            font-size: 12px;
+            color: #2563EB;
+            margin-top: 8px;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 24px;
+            padding: 28px;
+            width: 90%;
+            max-width: 380px;
+        }
+        
+        .modal-content h3 {
+            margin-bottom: 20px;
+            color: #1F2937;
+            font-size: 20px;
+        }
+        
+        .modal-content input {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border: 1px solid #E5E7EB;
+            border-radius: 12px;
+            font-family: 'Vazirmatn';
+            font-size: 14px;
+        }
+        
+        .modal-content input:focus {
+            outline: none;
+            border-color: #2563EB;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+        
+        @media (max-width: 800px) {
+            .main-content {
+                margin-right: 0;
+                padding: 16px;
+            }
+            .sidebar {
+                right: -70px;
+            }
+            .sidebar.open {
+                right: 0;
+            }
+            .rating-summary {
+                flex-direction: column;
+                text-align: center;
+            }
+            .rating-distribution {
+                max-width: 100%;
+            }
+            .reviews-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="glass-header">
+        <div class="header-title">پنل ارائه‌دهنده خدمات</div>
+    </header>
+    
+    <div class="menu-overlay" id="menuOverlay"></div>
+    
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="menu-toggle-item" id="menuToggleBtn">
+                <i class="fas fa-bars"></i>
+                <span class="menu-text">منو</span>
+            </div>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="provider-dashboard.html"><i class="fas fa-chart-line"></i><span class="menu-text"> داشبورد</span></a></li>
+            <li><a href="provider-services.html"><i class="fas fa-concierge-bell"></i><span class="menu-text"> سرویس‌ها</span></a></li>
+            <li><a href="provider-timeslots.html"><i class="fas fa-clock"></i><span class="menu-text"> زمان‌بندی</span></a></li>
+            <li><a href="provider-bookings.html"><i class="fas fa-calendar-check"></i><span class="menu-text"> رزروها</span></a></li>
+            <li><a href="provider-reviews.html" class="active"><i class="fas fa-comment"></i><span class="menu-text"> نظرات</span></a></li>
+        </ul>
+    </div>
+    
+    <div class="main-content">
+        <div class="dashboard-header">
+            <h1 class="page-title">نظرات و امتیازات</h1>
+            <div class="user-info">
+                <span class="user-name" id="username">ارائه‌دهنده</span>
+                <button class="btn-icon" id="profileBtn" title="پروفایل"><i class="fas fa-user-circle"></i></button>
+                <button class="btn-icon" id="changePasswordBtn" title="تغییر رمز"><i class="fas fa-key"></i></button>
+                <button class="btn-icon" id="logoutBtn" title="خروج"><i class="fas fa-sign-out-alt"></i></button>
+            </div>
+        </div>
+        
+        <div class="rating-summary" id="ratingSummary">
+            <div class="average-rating">
+                <div class="average-number" id="avgRating">0</div>
+                <div class="average-stars" id="avgStars">☆☆☆☆☆</div>
+                <div class="total-reviews" id="totalReviews">0 نظر</div>
+            </div>
+            <div class="rating-distribution" id="ratingDistribution">
+                <div class="rating-bar-item"><span class="rating-star-label">5 ستاره</span><div class="rating-bar-bg"><div class="rating-bar-fill" style="width: 0%"></div></div><span class="rating-percent" id="percent5">0%</span></div>
+                <div class="rating-bar-item"><span class="rating-star-label">4 ستاره</span><div class="rating-bar-bg"><div class="rating-bar-fill" style="width: 0%"></div></div><span class="rating-percent" id="percent4">0%</span></div>
+                <div class="rating-bar-item"><span class="rating-star-label">3 ستاره</span><div class="rating-bar-bg"><div class="rating-bar-fill" style="width: 0%"></div></div><span class="rating-percent" id="percent3">0%</span></div>
+                <div class="rating-bar-item"><span class="rating-star-label">2 ستاره</span><div class="rating-bar-bg"><div class="rating-bar-fill" style="width: 0%"></div></div><span class="rating-percent" id="percent2">0%</span></div>
+                <div class="rating-bar-item"><span class="rating-star-label">1 ستاره</span><div class="rating-bar-bg"><div class="rating-bar-fill" style="width: 0%"></div></div><span class="rating-percent" id="percent1">0%</span></div>
+            </div>
+        </div>
+        
+        <div class="reviews-container">
+            <div class="reviews-header">
+                <h2><i class="fas fa-comments"></i> نظرات کاربران</h2>
+                <div class="filter-group">
+                    <select id="ratingFilter" class="filter-select">
+                        <option value="all">همه امتیازات</option>
+                        <option value="5">5 ستاره</option>
+                        <option value="4">4 ستاره</option>
+                        <option value="3">3 ستاره</option>
+                        <option value="2">2 ستاره</option>
+                        <option value="1">1 ستاره</option>
+                    </select>
+                </div>
+            </div>
+            <div class="reviews-list" id="reviewsList">
+                <div style="text-align: center; padding: 20px;">در حال بارگذاری...</div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="changePasswordModal" class="modal pwd-modal">
+        <div class="modal-content">
+            <h3>تغییر رمز عبور</h3>
+            <input type="password" id="oldPassword" placeholder="رمز فعلی">
+            <input type="password" id="newPassword" placeholder="رمز جدید">
+            <input type="password" id="confirmPassword" placeholder="تکرار رمز جدید">
+            <div class="modal-buttons">
+                <button id="submitChangePassword" class="btn-primary" style="flex:1;">تایید</button>
+                <button id="closePwdModalBtn" class="btn-secondary" style="flex:1;">انصراف</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="/static/js/api.js"></script>
+    <script>
+        const sidebar = document.getElementById('sidebar');
+        const menuOverlay = document.getElementById('menuOverlay');
+        const menuToggleBtn = document.getElementById('menuToggleBtn');
+        
+        function toggleMenu() {
+            if (sidebar.classList.contains('open')) {
+                sidebar.classList.remove('open');
+                menuOverlay.classList.remove('active');
+                document.body.style.overflow = '';
+            } else {
+                sidebar.classList.add('open');
+                menuOverlay.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+        
+        menuToggleBtn.addEventListener('click', toggleMenu);
+        menuOverlay.addEventListener('click', toggleMenu);
+        
+        let allReviews = [];
+        
+        async function loadReviews() {
+            try {
+                allReviews = await ProviderAPI.getMyReviews();
+                updateRatingSummary();
+                filterReviews();
+            } catch(err) {
+                showError('خطا در بارگذاری نظرات');
+                console.error(err);
+            }
+        }
+        
+        function updateRatingSummary() {
+            const total = allReviews.length;
+            if (total === 0) {
+                document.getElementById('avgRating').innerText = '0';
+                document.getElementById('avgStars').innerHTML = '☆☆☆☆☆';
+                document.getElementById('totalReviews').innerText = '0 نظر';
+                for (let i = 1; i <= 5; i++) {
+                    document.getElementById(`percent${i}`).innerText = '0%';
+                    const fillBar = document.querySelector(`#ratingDistribution .rating-bar-item:nth-child(${6-i}) .rating-bar-fill`);
+                    if (fillBar) fillBar.style.width = '0%';
+                }
+                return;
+            }
+            
+            let sum = 0;
+            const counts = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0};
+            allReviews.forEach(review => {
+                sum += review.rating;
+                counts[review.rating]++;
+            });
+            const avg = sum / total;
+            document.getElementById('avgRating').innerText = avg.toFixed(1);
+            
+            const fullStars = Math.floor(avg);
+            const halfStar = avg % 1 >= 0.5;
+            let starsHtml = '';
+            for (let i = 1; i <= 5; i++) {
+                if (i <= fullStars) starsHtml += '★';
+                else if (i === fullStars + 1 && halfStar) starsHtml += '½';
+                else starsHtml += '☆';
+            }
+            document.getElementById('avgStars').innerHTML = starsHtml;
+            document.getElementById('totalReviews').innerText = `${total} نظر`;
+            
+            for (let i = 1; i <= 5; i++) {
+                const percent = (counts[i] / total) * 100;
+                document.getElementById(`percent${i}`).innerText = `${Math.round(percent)}%`;
+                const fillBar = document.querySelector(`#ratingDistribution .rating-bar-item:nth-child(${6-i}) .rating-bar-fill`);
+                if (fillBar) fillBar.style.width = `${percent}%`;
+            }
+        }
+        
+        function filterReviews() {
+            const ratingFilter = parseInt(document.getElementById('ratingFilter').value);
+            let filteredReviews = allReviews;
+            
+            if (ratingFilter !== 'all' && !isNaN(ratingFilter)) {
+                filteredReviews = allReviews.filter(r => r.rating === ratingFilter);
+            }
+            
+            if (filteredReviews.length > 0) {
+                const starRenderer = (rating) => {
+                    let stars = '';
+                    for (let i = 1; i <= 5; i++) {
+                        stars += i <= rating ? '★' : '☆';
+                    }
+                    return stars;
+                };
+                
+                document.getElementById('reviewsList').innerHTML = filteredReviews.map(review => `
+                    <div class="review-card">
+                        <div class="review-header">
+                            <div class="review-customer">
+                                <i class="fas fa-user-circle"></i> ${review.customerName}
+                            </div>
+                            <div class="review-stars">${starRenderer(review.rating)}</div>
+                            <div class="review-date">${review.date}</div>
+                        </div>
+                        <div class="review-comment">
+                            "${review.comment}"
+                        </div>
+                        <div class="review-service">
+                            <i class="fas fa-tag"></i> سرویس: ${review.serviceName || '-'}
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                document.getElementById('reviewsList').innerHTML = '<div style="text-align: center; padding: 20px;">هیچ نظری با این امتیاز یافت نشد</div>';
+            }
+        }
+        
+        document.getElementById('ratingFilter').addEventListener('change', () => {
+            filterReviews();
+        });
+        
+        document.getElementById('profileBtn').addEventListener('click', () => {
+            window.location.href = 'profile.html';
+        });
+        
+        document.getElementById('username').innerText = localStorage.getItem('username') || 'ارائه‌دهنده';
+        document.getElementById('logoutBtn').addEventListener('click', () => { AuthAPI.logout(); });
+        
+        const pwdModal = document.getElementById('changePasswordModal');
+        document.getElementById('changePasswordBtn').addEventListener('click', () => pwdModal.classList.add('active'));
+        document.getElementById('closePwdModalBtn').addEventListener('click', () => pwdModal.classList.remove('active'));
+        
+        document.getElementById('submitChangePassword').addEventListener('click', async () => {
+            const oldPass = document.getElementById('oldPassword').value;
+            const newPass = document.getElementById('newPassword').value;
+            const confirmPass = document.getElementById('confirmPassword').value;
+            try {
+                await AuthAPI.changePassword(oldPass, newPass, confirmPass);
+                showSuccess('رمز با موفقیت تغییر کرد');
+                pwdModal.classList.remove('active');
+                document.getElementById('oldPassword').value = '';
+                document.getElementById('newPassword').value = '';
+                document.getElementById('confirmPassword').value = '';
+            } catch(err) { showError(err.message); }
+        });
+        
+        loadReviews();
+    </script>
+</body>
+</html>

@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>جستجوی خدمات | سامانه مدیریت خدمات</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="statics/css/style.css">
+    
+    <style>
+        .menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 98;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .menu-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .sidebar {
+            position: fixed;
+            right: 0;
+            top: 0;
+            width: 70px;
+            height: 100vh;
+            background: rgba(8, 8, 12, 0.96);
+            backdrop-filter: blur(16px);
+            z-index: 99;
+            border-left: 1px solid rgba(255, 255, 255, 0.06);
+            transition: width 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            box-shadow: -8px 0 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+        
+        .sidebar.open {
+            width: 240px;
+        }
+        
+        .sidebar-header {
+            padding: 24px 0 16px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            margin-bottom: 20px;
+        }
+        
+        .menu-toggle-item {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 10px 0;
+            margin: 0 12px;
+            color: rgba(255, 255, 255, 0.7);
+            border-radius: 40px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+        
+        .menu-toggle-item i {
+            font-size: 22px;
+            width: 28px;
+            text-align: center;
+        }
+        
+        .menu-toggle-item .menu-text {
+            font-size: 13px;
+            font-weight: 500;
+            display: none;
+            letter-spacing: 0.3px;
+        }
+        
+        .sidebar.open .menu-toggle-item {
+            justify-content: flex-start;
+            padding: 10px 16px;
+            margin: 0 12px;
+        }
+        
+        .sidebar.open .menu-toggle-item .menu-text {
+            display: inline;
+        }
+        
+        .menu-toggle-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: white;
+        }
+        
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .sidebar-menu li {
+            margin: 4px 0;
+        }
+        
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 10px 0;
+            margin: 0 12px;
+            color: rgba(255, 255, 255, 0.6);
+            text-decoration: none;
+            border-radius: 40px;
+            transition: all 0.25s ease;
+            white-space: nowrap;
+            font-size: 14px;
+            font-weight: 450;
+        }
+        
+        .sidebar-menu a i {
+            font-size: 22px;
+            width: 28px;
+            text-align: center;
+        }
+        
+        .sidebar-menu a .menu-text {
+            display: none;
+            font-size: 13px;
+        }
+        
+        .sidebar.open .sidebar-menu a {
+            justify-content: flex-start;
+            padding: 10px 16px;
+            margin: 0 12px;
+        }
+        
+        .sidebar.open .sidebar-menu a .menu-text {
+            display: inline;
+        }
+        
+        .sidebar-menu a:hover {
+            background: rgba(255, 255, 255, 0.06);
+            color: white;
+        }
+        
+        .sidebar-menu a.active {
+            background: rgba(37, 99, 235, 0.15);
+            color: white;
+        }
+        
+        .sidebar-menu a.active i {
+            background: #2563EB;
+            color: white;
+            border-radius: 50%;
+            padding: 6px;
+            width: 34px;
+            margin-right: -3px;
+        }
+        
+        .sidebar.open .sidebar-menu a.active i {
+            margin-right: 0;
+        }
+        
+        .main-content {
+            margin-right: 70px;
+            padding: 24px 32px;
+            min-height: 100vh;
+            transition: margin-right 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+        }
+        
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        
+        .page-title {
+            color: white;
+            font-size: 26px;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .user-name {
+            color: rgba(255, 255, 255, 0.85);
+            font-weight: 500;
+            font-size: 14px;
+        }
+        
+        .btn-icon {
+            background: rgba(255, 255, 255, 0.06);
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.7);
+            padding: 8px 12px;
+            border-radius: 30px;
+            transition: all 0.2s;
+        }
+        
+        .btn-icon:hover {
+            background: rgba(255, 255, 255, 0.12);
+            color: white;
+        }
+        
+        .filters-sidebar {
+            background: rgba(255, 255, 255, 0.94);
+            backdrop-filter: blur(8px);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .filters-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1F2937;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #E5E7EB;
+        }
+        
+        .filter-group {
+            margin-bottom: 20px;
+        }
+        
+        .filter-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #374151;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        
+        .filter-input, .filter-select {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #E5E7EB;
+            border-radius: 12px;
+            font-family: 'Vazirmatn';
+            font-size: 13px;
+            background: white;
+        }
+        
+        .price-range {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn-filter {
+            width: 100%;
+            background: #2563EB;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-filter:hover {
+            background: #1D4ED8;
+        }
+        
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .results-count {
+            color: #6B7280;
+            font-size: 14px;
+        }
+        
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .service-card {
+            background: rgba(255, 255, 255, 0.94);
+            backdrop-filter: blur(8px);
+            border-radius: 20px;
+            padding: 20px;
+            transition: all 0.25s;
+            cursor: pointer;
+        }
+        
+        .service-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+        }
+        
+        .service-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1F2937;
+            margin-bottom: 8px;
+        }
+        
+        .service-provider {
+            font-size: 13px;
+            color: #6B7280;
+            margin-bottom: 10px;
+        }
+        
+        .service-price {
+            font-size: 20px;
+            font-weight: 700;
+            color: #2563EB;
+            margin: 10px 0;
+        }
+        
+        .btn-detail {
+            width: 100%;
+            background: #2563EB;
+            color: #e6e8ec;
+            border: none;
+            padding: 10px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-detail:hover {
+            background: #E5E7EB;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 24px;
+            padding: 28px;
+            width: 90%;
+            max-width: 400px;
+            position: relative;
+        }
+        
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            left: 20px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #9CA3AF;
+            cursor: pointer;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-close:hover {
+            background: #F3F4F6;
+            color: #4B5563;
+        }
+        
+        .modal-content h3 {
+            margin-bottom: 20px;
+            color: #1F2937;
+            font-size: 20px;
+            padding-left: 40px;
+        }
+        
+        .modal-content input {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border: 1px solid #E5E7EB;
+            border-radius: 12px;
+            font-family: 'Vazirmatn';
+            font-size: 14px;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+        
+        @media (max-width: 800px) {
+            .main-content {
+                margin-right: 0;
+                padding: 16px;
+            }
+            .sidebar {
+                right: -70px;
+            }
+            .sidebar.open {
+                right: 0;
+            }
+            .services-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="glass-header">
+        <div class="header-title">سامانه مدیریت خدمات</div>
+    </header>
+    
+    <div class="menu-overlay" id="menuOverlay"></div>
+    
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="menu-toggle-item" id="menuToggleBtn">
+                <i class="fas fa-bars"></i>
+                <span class="menu-text">منو</span>
+            </div>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="customer-services.html" class="active"><i class="fas fa-search"></i><span class="menu-text"> جستجوی خدمات</span></a></li>
+            <li><a href="customer-bookings.html"><i class="fas fa-calendar-check"></i><span class="menu-text"> رزروهای من</span></a></li>
+            <li><a href="customer-profile.html"><i class="fas fa-user"></i><span class="menu-text"> پروفایل</span></a></li>
+        </ul>
+    </div>
+    
+    <div class="main-content">
+        <div class="dashboard-header">
+            <h1 class="page-title">جستجوی خدمات</h1>
+            <div class="user-info">
+                <span class="user-name" id="username">مشتری</span>
+                <button class="btn-icon" id="profileBtn" title="پروفایل"><i class="fas fa-user-circle"></i></button>
+                <button class="btn-icon" id="changePasswordBtn" title="تغییر رمز"><i class="fas fa-key"></i></button>
+                <button class="btn-icon" id="logoutBtn" title="خروج"><i class="fas fa-sign-out-alt"></i></button>
+            </div>
+        </div>
+        
+        <div class="filters-sidebar">
+            <div class="filters-title">فیلترهای جستجو</div>
+            <div class="filter-group">
+                <label>نام سرویس</label>
+                <input type="text" id="searchName" class="filter-input" placeholder="جستجوی نام سرویس...">
+            </div>
+            <div class="filter-group">
+                <label>دسته‌بندی</label>
+                <select id="categoryFilter" class="filter-select">
+                    <option value="all">همه دسته‌بندی‌ها</option>
+                    <option value="تعمیرات">تعمیرات</option>
+                    <option value="زیبایی">زیبایی</option>
+                    <option value="آموزش">آموزش</option>
+                    <option value="نظافتی">خدمات نظافتی</option>
+                    <option value="خودرو">خدمات خودرو</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>محدوده قیمت</label>
+                <div class="price-range">
+                    <input type="number" id="minPrice" class="filter-input" placeholder="حداقل قیمت">
+                    <input type="number" id="maxPrice" class="filter-input" placeholder="حداکثر قیمت">
+                </div>
+            </div>
+            <button id="searchBtn" class="btn-filter">جستجو</button>
+        </div>
+        
+        <div class="results-header">
+            <div class="results-count" id="resultsCount">در حال بارگذاری...</div>
+        </div>
+        <div id="servicesGrid" class="services-grid">
+            <div style="text-align:center; padding:40px;">در حال بارگذاری...</div>
+        </div>
+    </div>
+    
+    <div id="changePasswordModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeChangePasswordModal()">×</button>
+            <h3>تغییر رمز عبور</h3>
+            <input type="password" id="oldPassword" placeholder="رمز فعلی">
+            <input type="password" id="newPassword" placeholder="رمز جدید">
+            <input type="password" id="confirmPassword" placeholder="تکرار رمز جدید">
+            <div class="modal-buttons">
+                <button id="submitChangePassword" class="btn-primary" style="flex:1;">تایید</button>
+                <button id="closePwdModalBtn" class="btn-secondary" style="flex:1;">انصراف</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="/static/js/api.js"></script>
+    <script>
+        const sidebar = document.getElementById('sidebar');
+        const menuOverlay = document.getElementById('menuOverlay');
+        const menuToggleBtn = document.getElementById('menuToggleBtn');
+        
+        function toggleMenu() {
+            if (sidebar.classList.contains('open')) {
+                sidebar.classList.remove('open');
+                menuOverlay.classList.remove('active');
+                document.body.style.overflow = '';
+            } else {
+                sidebar.classList.add('open');
+                menuOverlay.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+        
+        if (menuToggleBtn) menuToggleBtn.addEventListener('click', toggleMenu);
+        if (menuOverlay) menuOverlay.addEventListener('click', toggleMenu);
+        
+        document.getElementById('profileBtn').addEventListener('click', () => {
+            window.location.href = 'customer-profile.html';
+        });
+        
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            AuthAPI.logout();
+        });
+        
+        document.getElementById('username').innerText = localStorage.getItem('username') || 'مشتری';
+        
+        const pwdModal = document.getElementById('changePasswordModal');
+        document.getElementById('changePasswordBtn').addEventListener('click', () => {
+            pwdModal.classList.add('active');
+        });
+        
+        document.getElementById('closePwdModalBtn').addEventListener('click', () => {
+            pwdModal.classList.remove('active');
+        });
+        
+        window.closeChangePasswordModal = function() {
+            pwdModal.classList.remove('active');
+        };
+        
+        document.getElementById('submitChangePassword').addEventListener('click', async () => {
+            const oldPass = document.getElementById('oldPassword').value;
+            const newPass = document.getElementById('newPassword').value;
+            const confirmPass = document.getElementById('confirmPassword').value;
+            
+            if (newPass !== confirmPass) {
+                showError('رمز جدید و تکرار آن مطابقت ندارند');
+                return;
+            }
+            if (newPass.length < 6) {
+                showError('رمز عبور باید حداقل ۶ کاراکتر باشد');
+                return;
+            }
+            
+            try {
+                await AuthAPI.changePassword(oldPass, newPass, confirmPass);
+                showSuccess('رمز با موفقیت تغییر کرد');
+                pwdModal.classList.remove('active');
+                document.getElementById('oldPassword').value = '';
+                document.getElementById('newPassword').value = '';
+                document.getElementById('confirmPassword').value = '';
+            } catch(err) {
+                showError(err.message);
+            }
+        });
+        
+        async function searchServices() {
+            const filters = {
+                q: document.getElementById('searchName').value,
+                category: document.getElementById('categoryFilter').value,
+                minPrice: document.getElementById('minPrice').value,
+                maxPrice: document.getElementById('maxPrice').value
+            };
+            
+            document.getElementById('servicesGrid').innerHTML = '<div style="text-align:center; padding:40px;">در حال جستجو...</div>';
+            
+            try {
+                const services = await CustomerAPI.searchServices(filters);
+                
+                if (services && services.length > 0) {
+                    document.getElementById('resultsCount').innerHTML = `${services.length} سرویس یافت شد`;
+                    document.getElementById('servicesGrid').innerHTML = services.map(service => `
+                        <div class="service-card" onclick="viewServiceDetail(${service.id})">
+                            <div class="service-name">${service.name}</div>
+                            <div class="service-provider"><i class="fas fa-store"></i> ${service.provider}</div>
+                            <div class="service-price">${service.price.toLocaleString()} تومان</div>
+                            <button class="btn-detail">مشاهده جزئیات</button>
+                        </div>
+                    `).join('');
+                } else {
+                    document.getElementById('resultsCount').innerHTML = '0 سرویس یافت شد';
+                    document.getElementById('servicesGrid').innerHTML = '<div style="text-align:center; padding:40px;">هیچ سرویسی یافت نشد</div>';
+                }
+            } catch(err) {
+                showError('خطا در جستجوی خدمات');
+            }
+        }
+        
+        window.viewServiceDetail = (id) => {
+            window.location.href = `customer-service-detail.html?id=${id}`;
+        };
+        
+        document.getElementById('searchBtn').addEventListener('click', searchServices);
+        document.getElementById('searchName').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') searchServices();
+        });
+        
+        searchServices();
+    </script>
+</body>
+</html>
