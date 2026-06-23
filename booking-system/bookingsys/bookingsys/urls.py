@@ -39,12 +39,12 @@ urlpatterns = [
     path('admin-dashboard/', TemplateView.as_view(template_name='admin-dashboard.html'), name='admin_dashboard'),
     path('provider-services/', TemplateView.as_view(template_name='provider-services.html'), name='provider_services'),
     path('provider-timeslots/', TemplateView.as_view(template_name='provider-timeslots.html'),
-         name='provider_timeslots'),
+            name='provider_timeslots'),
     path('provider-bookings/', TemplateView.as_view(template_name='provider-bookings.html'), name='provider_bookings'),
     path('provider-profile/', TemplateView.as_view(template_name='provider-profile.html'), name='provider_profile'),
     path('customer-services/', TemplateView.as_view(template_name='customer-services.html'), name='customer_services'),
     path('customer-service-detail/', TemplateView.as_view(template_name='customer-service-detail.html'),
-         name='customer_service_detail'),
+            name='customer_service_detail'),
     path('customer-booking/', TemplateView.as_view(template_name='customer-booking.html'), name='customer_booking'),
     path('customer-bookings/', TemplateView.as_view(template_name='customer-bookings.html'), name='customer_bookings'),
     path('customer-payment/', TemplateView.as_view(template_name='customer-payment.html'), name='customer_payment'),
@@ -52,4 +52,5 @@ urlpatterns = [
 ]
 
 if settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
