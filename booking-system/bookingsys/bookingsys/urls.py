@@ -34,17 +34,25 @@ urlpatterns = [
     path('swagger.json/', schema_view.without_ui(cache_timeout=0), name='schema-json'),
 
     # ========== صفحات HTML (فرانت‌اند) ==========
-    path('', TemplateView.as_view(template_name='login.html'), name='home'),  # ← تغییر نام به home
+    path('', TemplateView.as_view(template_name='login.html'), name='home'),
     path('register/', TemplateView.as_view(template_name='register.html'), name='register'),
+    
+    # صفحات ادمین
     path('admin-dashboard/', TemplateView.as_view(template_name='admin-dashboard.html'), name='admin_dashboard'),
+    path('admin-users/', TemplateView.as_view(template_name='admin-users.html'), name='admin_users'),
+    path('admin-services/', TemplateView.as_view(template_name='admin-services.html'), name='admin_services'),
+    path('admin-bookings/', TemplateView.as_view(template_name='admin-bookings.html'), name='admin_bookings'),
+    path('admin-reports/', TemplateView.as_view(template_name='admin-reports.html'), name='admin_reports'),
+    
+    # صفحات ارائه‌دهنده
     path('provider-services/', TemplateView.as_view(template_name='provider-services.html'), name='provider_services'),
-    path('provider-timeslots/', TemplateView.as_view(template_name='provider-timeslots.html'),
-            name='provider_timeslots'),
+    path('provider-timeslots/', TemplateView.as_view(template_name='provider-timeslots.html'), name='provider_timeslots'),
     path('provider-bookings/', TemplateView.as_view(template_name='provider-bookings.html'), name='provider_bookings'),
     path('provider-profile/', TemplateView.as_view(template_name='provider-profile.html'), name='provider_profile'),
+    
+    # صفحات مشتری
     path('customer-services/', TemplateView.as_view(template_name='customer-services.html'), name='customer_services'),
-    path('customer-service-detail/', TemplateView.as_view(template_name='customer-service-detail.html'),
-            name='customer_service_detail'),
+    path('customer-service-detail/', TemplateView.as_view(template_name='customer-service-detail.html'), name='customer_service_detail'),
     path('customer-booking/', TemplateView.as_view(template_name='customer-booking.html'), name='customer_booking'),
     path('customer-bookings/', TemplateView.as_view(template_name='customer-bookings.html'), name='customer_bookings'),
     path('customer-payment/', TemplateView.as_view(template_name='customer-payment.html'), name='customer_payment'),
