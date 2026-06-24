@@ -412,6 +412,7 @@
             background: #FEF3C7;
         }
         
+        /* مودال سرویس */
         .modal {
             display: none;
             position: fixed;
@@ -623,7 +624,6 @@
             </div>
         </div>
         <ul class="sidebar-menu">
-            <li><a href="/provider-dashboard/"><i class="fas fa-chart-line"></i><span class="menu-text"> داشبورد</span></a></li>
             <li><a href="/provider-services/" class="active"><i class="fas fa-concierge-bell"></i><span class="menu-text"> سرویس‌ها</span></a></li>
             <li><a href="/provider-timeslots/"><i class="fas fa-clock"></i><span class="menu-text"> زمان‌بندی</span></a></li>
             <li><a href="/provider-bookings/"><i class="fas fa-calendar-check"></i><span class="menu-text"> رزروها</span></a></li>
@@ -654,6 +654,7 @@
         </div>
     </div>
     
+    <!-- مودال افزودن/ویرایش سرویس -->
     <div id="serviceModal" class="modal">
         <div class="modal-content">
             <button class="modal-close" onclick="closeServiceModal()">×</button>
@@ -673,12 +674,7 @@
             
             <div class="form-row">
                 <select id="serviceCategory">
-                    <option value="تعمیرات">تعمیرات</option>
-                    <option value="زیبایی">زیبایی</option>
-                    <option value="آموزش">آموزش</option>
-                    <option value="نظافتی">خدمات نظافتی</option>
-                    <option value="خودرو">خدمات خودرو</option>
-                    <option value="سایر">سایر</option>
+                    <!--JavaScript-->
                 </select>
                 <select id="serviceStatus">
                     <option value="active">فعال</option>
@@ -700,6 +696,7 @@
         </div>
     </div>
     
+    <!-- مودال مدیریت زمان‌بندی -->
     <div id="slotsModal" class="modal">
         <div class="modal-content">
             <button class="modal-close" onclick="closeSlotsModal()">×</button>
@@ -719,6 +716,11 @@
     
     <script src="{% static 'js/api.js' %}"></script>
     <script>
+        let categoriesList = [];
+        let currentServiceId = null;
+        let selectedImageFile = null;
+        let currentSlotServiceId = null;
+
         const sidebar = document.getElementById('sidebar');
         const menuOverlay = document.getElementById('menuOverlay');
         const menuToggleBtn = document.getElementById('menuToggleBtn');
@@ -737,7 +739,7 @@
         
         if (menuToggleBtn) menuToggleBtn.addEventListener('click', toggleMenu);
         if (menuOverlay) menuOverlay.addEventListener('click', toggleMenu);
-        
+
         const profileBtn = document.getElementById('profileBtn');
         if (profileBtn) {
             profileBtn.addEventListener('click', () => {
@@ -751,15 +753,12 @@
                 AuthAPI.logout();
             });
         }
-        
+
         const usernameSpan = document.getElementById('username');
         if (usernameSpan) {
             usernameSpan.innerText = localStorage.getItem('username') || 'ارائه‌دهنده';
         }
-        
-        let currentServiceId = null;
-        let selectedImageFile = null;
-        
+
         window.closeServiceModal = () => {
             document.getElementById('serviceModal').classList.remove('active');
         };
@@ -767,7 +766,50 @@
         window.closeSlotsModal = () => {
             document.getElementById('slotsModal').classList.remove('active');
         };
-        
+
+        async function loadCategories() {
+            try {
+                const response = await fetch(`${BASE_URL}/services/categories/`, {
+                    headers: getHeaders()
+                });
+                const data = await response.json();
+                categoriesList = data;
+                return data;
+            } catch (error) {
+                console.error('خطا در دریافت دسته‌بندی‌ها:', error);
+                return [
+                    { id: 1, name: 'تعمیرات' },
+                    { id: 2, name: 'زیبایی' },
+                    { id: 3, name: 'آموزش' },
+                    { id: 4, name: 'نظافتی' },
+                    { id: 5, name: 'خودرو' },
+                    { id: 6, name: 'سایر' }
+                ];
+            }
+        }
+
+        function populateCategorySelect(selectedId = null) {
+            const select = document.getElementById('serviceCategory');
+            select.innerHTML = '';
+            
+            const defaultOption = document.createElement('option');
+            defaultOption.value = '';
+            defaultOption.textContent = '— انتخاب کنید —';
+            defaultOption.disabled = true;
+            defaultOption.selected = true;
+            select.appendChild(defaultOption);
+            
+            categoriesList.forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat.id;
+                option.textContent = cat.name;
+                if (selectedId && cat.id == selectedId) {
+                    option.selected = true;
+                }
+                select.appendChild(option);
+            });
+        }
+
         async function loadServices() {
             try {
                 const services = await ProviderAPI.getMyServices();
@@ -775,20 +817,20 @@
                     document.getElementById('servicesList').innerHTML = services.map(service => `
                         <div class="service-card-item">
                             <div class="service-header">
-                                <div class="service-title">${service.name}</div>
-                                <span class="service-status ${service.status === 'active' ? 'status-active' : 'status-inactive'}">${service.status === 'active' ? 'فعال' : 'غیرفعال'}</span>
+                                <div class="service-title">${service.title || service.name}</div>
+                                <span class="service-status ${service.is_active ? 'status-active' : 'status-inactive'}">${service.is_active ? 'فعال' : 'غیرفعال'}</span>
                             </div>
                             <div style="display: flex; gap: 15px; flex-wrap: wrap;">
                                 <div>
                                     ${service.image ? 
-                                        `<img src="${service.image}" class="service-image" alt="${service.name}">` : 
+                                        `<img src="${service.image}" class="service-image" alt="${service.title || service.name}">` : 
                                         `<div class="service-image-placeholder"><i class="fas fa-camera"></i></div>`
                                     }
                                 </div>
                                 <div style="flex: 1;">
                                     <div class="service-details">
-                                        <div class="detail-item"><i class="fas fa-tag"></i> دسته‌بندی: ${service.category || '-'}</div>
-                                        <div class="detail-item"><i class="fas fa-clock"></i> مدت زمان: ${service.duration || '-'} دقیقه</div>
+                                        <div class="detail-item"><i class="fas fa-tag"></i> دسته‌بندی: ${service.category_name || '-'}</div>
+                                        <div class="detail-item"><i class="fas fa-clock"></i> مدت زمان: ${service.duration_minutes || service.duration || '-'} دقیقه</div>
                                         <div class="detail-item"><i class="fas fa-credit-card"></i> قیمت: ${(service.price || 0).toLocaleString()} تومان</div>
                                     </div>
                                     <div class="service-description">
@@ -811,7 +853,7 @@
                 console.error(err);
             }
         }
-        
+
         const imageUploadArea = document.getElementById('imageUploadArea');
         const imageInput = document.getElementById('serviceImage');
         const modalImagePreview = document.getElementById('modalImagePreview');
@@ -840,17 +882,20 @@
             selectedImageFile = null;
             modalImagePreview.innerHTML = `<div class="image-preview-placeholder"><i class="fas fa-camera"></i></div>`;
         }
-        
-        document.getElementById('addServiceBtn').addEventListener('click', () => {
+
+        document.getElementById('addServiceBtn').addEventListener('click', async () => {
             currentServiceId = null;
             document.getElementById('modalTitle').innerText = 'افزودن سرویس جدید';
             document.getElementById('serviceName').value = '';
-            document.getElementById('serviceCategory').value = 'تعمیرات';
             document.getElementById('serviceDescription').value = '';
             document.getElementById('servicePrice').value = '';
             document.getElementById('serviceDuration').value = '';
             document.getElementById('serviceStatus').value = 'active';
             resetImagePreview();
+            
+            await loadCategories();
+            populateCategorySelect();
+            
             document.getElementById('serviceModal').classList.add('active');
         });
         
@@ -874,14 +919,18 @@
                 showError('لطفاً قیمت معتبر وارد کنید');
                 return;
             }
+            if (!duration || duration <= 0) {
+                showError('لطفاً مدت زمان معتبر وارد کنید');
+                return;
+            }
             
             const formData = new FormData();
-            formData.append('name', name);
+            formData.append('title', name);
             formData.append('category', category);
             formData.append('description', description);
             formData.append('price', price);
-            formData.append('duration', duration);
-            formData.append('status', status);
+            formData.append('duration_minutes', duration);
+            formData.append('is_active', status === 'active');
             if (selectedImageFile) {
                 formData.append('image', selectedImageFile);
             }
@@ -900,7 +949,7 @@
                 showError(err.message);
             }
         });
-        
+
         window.editService = async (id) => {
             try {
                 const services = await ProviderAPI.getMyServices();
@@ -908,13 +957,16 @@
                 if (service) {
                     currentServiceId = id;
                     document.getElementById('modalTitle').innerText = 'ویرایش سرویس';
-                    document.getElementById('serviceName').value = service.name;
-                    document.getElementById('serviceCategory').value = service.category || 'تعمیرات';
+                    document.getElementById('serviceName').value = service.title || service.name;
                     document.getElementById('serviceDescription').value = service.description || '';
                     document.getElementById('servicePrice').value = service.price;
-                    document.getElementById('serviceDuration').value = service.duration || '';
-                    document.getElementById('serviceStatus').value = service.status;
+                    document.getElementById('serviceDuration').value = service.duration_minutes || service.duration || '';
+                    document.getElementById('serviceStatus').value = service.is_active ? 'active' : 'inactive';
                     resetImagePreview();
+                    
+                    await loadCategories();
+                    populateCategorySelect(service.category);
+                    
                     if (service.image) {
                         modalImagePreview.innerHTML = `<img src="${service.image}" class="image-preview" alt="پیش‌نمایش">`;
                     }
@@ -924,7 +976,7 @@
                 showError('خطا در بارگذاری اطلاعات سرویس');
             }
         };
-        
+
         window.deleteService = async (id) => {
             if (confirm('آیا از حذف این سرویس اطمینان دارید؟')) {
                 try {
@@ -936,9 +988,7 @@
                 }
             }
         };
-        
-        let currentSlotServiceId = null;
-        
+
         window.manageSlots = async (serviceId) => {
             currentSlotServiceId = serviceId;
             document.getElementById('slotsModalTitle').innerHTML = `مدیریت زمان‌بندی`;
@@ -952,7 +1002,7 @@
                 if (slots && slots.length > 0) {
                     document.getElementById('slotsList').innerHTML = slots.map(slot => `
                         <div class="slot-item">
-                            <span class="slot-time">${slot.time}</span>
+                            <span class="slot-time">${slot.start_time_str || slot.start_time}</span>
                             <button class="btn-delete-slot" onclick="deleteSlot(${slot.id})"><i class="fas fa-trash"></i></button>
                         </div>
                     `).join('');
@@ -982,8 +1032,17 @@
                 showError('لطفاً ساعت را وارد کنید');
                 return;
             }
+            
+            const today = new Date().toISOString().split('T')[0];
+            const startDateTime = `${today}T${time}:00`;
+            const endDateTime = `${today}T${time}:00`; 
+            
             try {
-                await ProviderAPI.addTimeSlot(currentSlotServiceId, { time, available: true });
+                await ProviderAPI.addTimeSlot(currentSlotServiceId, {
+                    start_time: startDateTime,
+                    end_time: endDateTime,
+                    is_active: true
+                });
                 showSuccess('زمان با موفقیت اضافه شد');
                 document.getElementById('newSlotTime').value = '';
                 await loadSlots(currentSlotServiceId);
@@ -994,6 +1053,10 @@
         
         document.getElementById('closeSlotsModalBtn').addEventListener('click', () => {
             document.getElementById('slotsModal').classList.remove('active');
+        });
+
+        loadCategories().then(() => {
+            // load categories
         });
         
         loadServices();
