@@ -220,3 +220,157 @@ class UserAPITest(APITestCase):
         
         self.customer.refresh_from_db()
         self.assertEqual(self.customer.role, User.Roles.SERVICE_PROVIDER)
+    
+    def test_12_login_invalid_credentials(self):
+        url = '/api/users/login/'
+        
+        invalid_username = {
+            'username': 'wronguser',
+            'password': 'customer123'
+        }
+        response = self.client.post(url, invalid_username, format='json')
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertFalse(response.data['success'])
+        
+        invalid_password = {
+            'username': 'customer',
+            'password': 'wrongpass'
+        }
+        response = self.client.post(url, invalid_password, format='json')
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertFalse(response.data['success'])
+        
+        empty_fields = {
+            'username': '',
+            'password': ''
+        }
+        response = self.client.post(url, empty_fields, format='json')
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertFalse(response.data['success'])
+    
+    def test_13_user_list_permissions(self):
+        admin_login = self.client.post('/api/users/login/', {
+            'username': 'admin',
+            'password': 'admin123'
+        }, format='json')
+        admin_token = admin_login.data['access']
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {admin_token}')
+        
+        admin_response = self.client.get('/api/users/')
+        self.assertEqual(admin_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(admin_response.data['count'], 3)
+        
+        self.client.credentials()
+        customer_login = self.client.post('/api/users/login/', {
+            'username': 'customer',
+            'password': 'customer123'
+        }, format='json')
+        customer_token = customer_login.data['access']
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {customer_token}')
+        
+        customer_response = self.client.get('/api/users/')
+        self.assertEqual(customer_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(customer_response.data['count'], 1)
+        self.assertEqual(customer_response.data['results'][0]['username'], 'customer')
+    
+    def test_14_admin_can_manage_users(self):
+        login_url = '/api/users/login/'
+        response = self.client.post(login_url, {
+            'username': 'admin',
+            'password': 'admin123'
+        }, format='json')
+        
+        token = response.data['access']
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {token}')
+        
+        toggle_url = f'/api/users/{self.customer.id}/toggle_active/'
+        response = self.client.post(toggle_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertFalse(response.data['is_active'])
+        
+        response = self.client.post(toggle_url)
+        self.assertTrue(response.data['is_active'])
+        
+        role_url = f'/api/users/{self.customer.id}/change_role/'
+        response = self.client.post(role_url, {'role': 'service_provider'}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['role'], 'service_provider')
+        self.customer.refresh_from_db()
+        self.assertEqual(self.customer.role, User.Roles.SERVICE_PROVIDER)
+    
+    def test_15_customer_cannot_manage_users(self):
+        customer_login = self.client.post('/api/users/login/', {
+            'username': 'customer',
+            'password': 'customer123'
+        }, format='json')
+        customer_token = customer_login.data['access']
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {customer_token}')
+        
+        toggle_url = f'/api/users/{self.provider.id}/toggle_active/'
+        response = self.client.post(toggle_url)
+        self.assertIn(response.status_code, [status.HTTP_403_FORBIDDEN, status.HTTP_404_NOT_FOUND])
+        
+        role_url = f'/api/users/{self.provider.id}/change_role/'
+        response = self.client.post(role_url, {'role': 'customer'}, format='json')
+        self.assertIn(response.status_code, [status.HTTP_403_FORBIDDEN, status.HTTP_404_NOT_FOUND])
+    
+    def test_16_stats_permissions(self):
+        admin_login = self.client.post('/api/users/login/', {
+            'username': 'admin',
+            'password': 'admin123'
+        }, format='json')
+        admin_token = admin_login.data['access']
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {admin_token}')
+        
+        admin_stats = self.client.get('/api/users/admin_stats/')
+        self.assertEqual(admin_stats.status_code, status.HTTP_200_OK)
+        self.assertIn('users', admin_stats.data)
+        
+        self.client.credentials()
+        provider_login = self.client.post('/api/users/login/', {
+            'username': 'provider',
+            'password': 'provider123'
+        }, format='json')
+        provider_token = provider_login.data['access']
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {provider_token}')
+        
+        provider_stats = self.client.get('/api/users/provider_stats/')
+        self.assertEqual(provider_stats.status_code, status.HTTP_200_OK)
+        self.assertIn('services', provider_stats.data)
+        
+        self.client.credentials()
+        customer_login = self.client.post('/api/users/login/', {
+            'username': 'customer',
+            'password': 'customer123'
+        }, format='json')
+        customer_token = customer_login.data['access']
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {customer_token}')
+        
+        customer_stats = self.client.get('/api/users/customer_stats/')
+        self.assertEqual(customer_stats.status_code, status.HTTP_200_OK)
+        self.assertIn('bookings', customer_stats.data)
+        
+        self.client.credentials()
+        customer_login = self.client.post('/api/users/login/', {
+            'username': 'customer',
+            'password': 'customer123'
+        }, format='json')
+        customer_token = customer_login.data['access']
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {customer_token}')
+        
+        admin_stats_access = self.client.get('/api/users/admin_stats/')
+        self.assertEqual(admin_stats_access.status_code, status.HTTP_403_FORBIDDEN)
+        
+        provider_stats_access = self.client.get('/api/users/provider_stats/')
+        self.assertEqual(provider_stats_access.status_code, status.HTTP_403_FORBIDDEN)
+        
+        self.client.credentials()
+        provider_login = self.client.post('/api/users/login/', {
+            'username': 'provider',
+            'password': 'provider123'
+        }, format='json')
+        provider_token = provider_login.data['access']
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {provider_token}')
+        
+        customer_stats_access = self.client.get('/api/users/customer_stats/')
+        self.assertEqual(customer_stats_access.status_code, status.HTTP_403_FORBIDDEN)

@@ -16,11 +16,19 @@ from .permissions import IsAdmin, IsProvider, IsCustomer
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     # permission_classes = [IsAuthenticated]
+        
     def get_permissions(self):
         if self.action in ['login', 'register']:
-            return [AllowAny()]
+            return [AllowAny()]        
+        if self.action == 'admin_stats':
+            return [IsAdmin()]
+        if self.action == 'provider_stats':
+            return [IsProvider()]
+        if self.action == 'customer_stats':
+            return [IsCustomer()]
+        
         return [IsAuthenticated()]
-    
+
     def get_serializer_class(self):
         if self.action == 'create':
             return UserCreateSerializer

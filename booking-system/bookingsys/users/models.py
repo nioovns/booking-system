@@ -1,9 +1,35 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.core.validators import RegexValidator
 from django.utils.translation import gettext_lazy as _
 
+
+class UserManager(BaseUserManager):    
+    def create_user(self, username, email=None, password=None, **extra_fields):
+        if not username:
+            raise ValueError('نام کاربری الزامی است')
+        
+        email = self.normalize_email(email)
+        user = self.model(username=username, email=email, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+    
+    def create_superuser(self, username, email=None, password=None, **extra_fields):
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault('role', self.model.Roles.ADMIN)
+        
+        if extra_fields.get('is_staff') is not True:
+            raise ValueError('Superuser must have is_staff=True.')
+        if extra_fields.get('is_superuser') is not True:
+            raise ValueError('Superuser must have is_superuser=True.')
+        
+        return self.create_user(username, email, password, **extra_fields)
+
 class User(AbstractUser):
+    objects = UserManager()
+    
     class Roles(models.TextChoices):
         ADMIN = 'admin', _('Admin')
         SERVICE_PROVIDER = 'service_provider', _('Service provider')
@@ -67,4 +93,4 @@ class User(AbstractUser):
     class Meta:
         verbose_name = _('User')
         verbose_name_plural = _('Users')
-        ordering = ['-date_joined']
+        ordering = ['-date_joined']  
