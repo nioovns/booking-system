@@ -490,7 +490,7 @@
             <input type="password" id="modalPassword" placeholder="رمز عبور">
             <select id="modalRole">
                 <option value="customer">مشتری (Customer)</option>
-                <option value="provider">ارائه‌دهنده (Provider)</option>
+                <option value="service_provider">ارائه‌دهنده (Provider)</option>
                 <option value="admin">ادمین (Admin)</option>
             </select>
             <div class="modal-buttons">
@@ -514,136 +514,335 @@
     </div>
     
     <script src="{% static 'js/api.js' %}"></script>
+
     <script>
+    document.addEventListener('DOMContentLoaded', () => {
+
         const sidebar = document.getElementById('sidebar');
         const menuOverlay = document.getElementById('menuOverlay');
         const menuToggleBtn = document.getElementById('menuToggleBtn');
-        
+
         function toggleMenu() {
-            if (sidebar.classList.contains('open')) {
-                sidebar.classList.remove('open');
-                menuOverlay.classList.remove('active');
-                document.body.style.overflow = '';
-            } else {
-                sidebar.classList.add('open');
-                menuOverlay.classList.add('active');
-                document.body.style.overflow = 'hidden';
-            }
+            sidebar.classList.toggle('open');
+            menuOverlay.classList.toggle('active');
+
+            document.body.style.overflow =
+                sidebar.classList.contains('open')
+                ? 'hidden'
+                : '';
         }
-        
-        menuToggleBtn.addEventListener('click', toggleMenu);
-        menuOverlay.addEventListener('click', toggleMenu);
-        
+
+        menuToggleBtn?.addEventListener('click', toggleMenu);
+        menuOverlay?.addEventListener('click', toggleMenu);
+
         const roleMap = {
-            'admin': 'ادمین',
-            'provider': 'ارائه‌دهنده',
-            'customer': 'مشتری'
+            admin: 'ادمین',
+            customer: 'مشتری',
+            service_provider: 'ارائه‌دهنده'
         };
-        
+
         async function loadUsers() {
             try {
-                const users = await AdminAPI.getUsers();
-                if (users && users.length > 0) {
-                    document.getElementById('usersTableBody').innerHTML = users.map(user => `
+
+                const data = await AdminAPI.getUsers();
+
+                console.log('USERS=', data);
+
+                const users = data.results || [];
+
+                const tbody =
+                    document.getElementById('usersTableBody');
+
+                if (!users.length) {
+
+                    tbody.innerHTML = `
                         <tr>
-                            <td>${user.username}</td>
-                            <td><span class="role-badge role-${user.role}">${roleMap[user.role] || user.role}</span></td>
-                            <td>${user.createdAt || '-'}</td>
-                            <td class="action-buttons">
-                                <button class="btn-edit" onclick="editUser(${user.id})" title="ویرایش"><i class="fas fa-edit"></i></button>
-                                <button class="btn-delete" onclick="deleteUser(${user.id})" title="حذف"><i class="fas fa-trash"></i></button>
+                            <td colspan="4"
+                            style="text-align:center;">
+                                هیچ کاربری یافت نشد
                             </td>
                         </tr>
-                    `).join('');
-                } else {
-                    document.getElementById('usersTableBody').innerHTML = '<tr><td colspan="4" style="text-align: center;">هیچ کاربری یافت نشد</td></tr>';
+                    `;
+
+                    return;
                 }
-            } catch(err) {
-                showError('خطا در بارگذاری کاربران');
+
+                tbody.innerHTML =
+                    users.map(user => `
+                    <tr>
+
+                        <td>
+                            ${user.username || '-'}
+                        </td>
+
+                        <td>
+
+                            <span
+                            class="role-badge role-${user.role}">
+
+                                ${roleMap[user.role] || user.role}
+
+                            </span>
+
+                        </td>
+
+                        <td>
+
+                            ${
+                                user.date_joined
+                                ? new Date(
+                                    user.date_joined
+                                ).toLocaleDateString('fa-IR')
+                                : '-'
+                            }
+
+                        </td>
+
+                        <td class="action-buttons">
+
+                            <button
+                                type="button"
+                                class="btn-edit"
+                                onclick="editUser(${user.id})">
+
+                                <i class="fas fa-edit"></i>
+
+                            </button>
+
+                            <button
+                                type="button"
+                                class="btn-delete"
+                                onclick="deleteUser(${user.id})">
+
+                                <i class="fas fa-trash"></i>
+
+                            </button>
+
+                        </td>
+
+                    </tr>
+                `).join('');
+
+            }
+
+            catch(err) {
+
                 console.error(err);
+
+                showError(
+                    err.message ||
+                    'خطا در بارگذاری کاربران'
+                );
             }
         }
-        
-        document.getElementById('addUserBtn').addEventListener('click', () => {
-            document.getElementById('modalTitle').innerText = 'افزودن کاربر جدید';
-            document.getElementById('modalUsername').value = '';
-            document.getElementById('modalPassword').value = '';
-            document.getElementById('modalRole').value = 'customer';
-            document.getElementById('userModal').classList.add('active');
+
+        document
+        .getElementById('addUserBtn')
+        ?.addEventListener('click', () => {
+
+            document
+            .getElementById('modalTitle')
+            .innerText =
+            'افزودن کاربر جدید';
+
+            document
+            .getElementById('modalUsername')
+            .value = '';
+
+            document
+            .getElementById('modalPassword')
+            .value = '';
+
+            document
+            .getElementById('modalRole')
+            .value = 'customer';
+
+            document
+            .getElementById('userModal')
+            .classList
+            .add('active');
+
         });
-        
-        document.getElementById('closeModalBtn').addEventListener('click', () => {
-            document.getElementById('userModal').classList.remove('active');
+
+        document
+        .getElementById('closeModalBtn')
+        ?.addEventListener('click', () => {
+
+            document
+            .getElementById('userModal')
+            .classList
+            .remove('active');
+
         });
-        
-        document.getElementById('saveUserBtn').addEventListener('click', async () => {
-            const username = document.getElementById('modalUsername').value.trim();
-            const password = document.getElementById('modalPassword').value;
-            const role = document.getElementById('modalRole').value;
-            
+
+        document
+        .getElementById('saveUserBtn')
+        ?.addEventListener(
+            'click',
+            async () => {
+
+            const username =
+                document
+                .getElementById('modalUsername')
+                .value
+                .trim();
+
+            const password =
+                document
+                .getElementById('modalPassword')
+                .value;
+
+            const role =
+                document
+                .getElementById('modalRole')
+                .value;
+
             if (!username || !password) {
-                showError('لطفاً نام کاربری و رمز عبور را وارد کنید');
+                showError(
+                    'نام کاربری و رمز عبور الزامی است'
+                );
                 return;
             }
-            if (password.length < 6) {
-                showError('رمز عبور باید حداقل ۶ کاراکتر باشد');
-                return;
-            }
-            
+
             try {
-                await AdminAPI.createUser(username, password, role);
-                showSuccess('کاربر با موفقیت اضافه شد');
-                document.getElementById('userModal').classList.remove('active');
+
+                await AdminAPI.createUser(
+                    username,
+                    password,
+                    role
+                );
+
+                showSuccess(
+                    'کاربر ایجاد شد'
+                );
+
+                document
+                .getElementById('userModal')
+                .classList
+                .remove('active');
+
                 loadUsers();
-            } catch(err) {
+
+            }
+
+            catch(err) {
                 showError(err.message);
             }
+
         });
-        
+
         window.editUser = async (id) => {
-            showError('ویرایش کاربر در حال توسعه است');
-        };
-        
-        window.deleteUser = async (id) => {
-            if (confirm('آیا از حذف این کاربر اطمینان دارید؟')) {
-                try {
-                    await AdminAPI.deleteUser(id);
-                    showSuccess('کاربر با موفقیت حذف شد');
-                    loadUsers();
-                } catch(err) {
-                    showError(err.message);
-                }
-            }
-        };
-        
-        document.getElementById('username').innerText = localStorage.getItem('username') || 'ادمین';
-        
-        document.getElementById('logoutBtn').addEventListener('click', () => {
-            AuthAPI.logout();
-        });
-        
-        const pwdModal = document.getElementById('changePasswordModal');
-        document.getElementById('changePasswordBtn').addEventListener('click', () => pwdModal.classList.add('active'));
-        document.getElementById('closePwdModalBtn').addEventListener('click', () => pwdModal.classList.remove('active'));
-        
-        document.getElementById('submitChangePassword').addEventListener('click', async () => {
-            const oldPass = document.getElementById('oldPassword').value;
-            const newPass = document.getElementById('newPassword').value;
-            const confirmPass = document.getElementById('confirmPassword').value;
-            
             try {
-                await AuthAPI.changePassword(oldPass, newPass, confirmPass);
-                showSuccess('رمز با موفقیت تغییر کرد');
-                pwdModal.classList.remove('active');
-                document.getElementById('oldPassword').value = '';
-                document.getElementById('newPassword').value = '';
-                document.getElementById('confirmPassword').value = '';
-            } catch(err) {
+                const data = await AdminAPI.getUsers();
+
+                const users = data.results || [];
+                const user = users.find(u => u.id === id);
+
+                if (!user) {
+                    showError('کاربر پیدا نشد');
+                    return;
+                }
+
+                document.getElementById('modalTitle').innerText =
+                    'ویرایش کاربر';
+
+                document.getElementById('modalUsername').value =
+                    user.username || '';
+
+                document.getElementById('modalPassword').value = '';
+
+                document.getElementById('modalRole').value =
+                    user.role === 'service_provider'
+                        ? 'provider'
+                        : user.role;
+
+                document.getElementById('saveUserBtn')
+                    .setAttribute('data-edit-id', id);
+
+                document.getElementById('userModal')
+                    .classList.add('active');
+
+            } catch (err) {
                 showError(err.message);
             }
-        });
-        
+        };
+
+        window.deleteUser =
+        async function(id) {
+
+            if (
+                !confirm(
+                    'از حذف مطمئن هستید؟'
+                )
+            ) return;
+
+            try {
+
+                await AdminAPI.deleteUser(id);
+
+                showSuccess(
+                    'کاربر حذف شد'
+                );
+
+                loadUsers();
+
+            }
+
+            catch(err) {
+
+                showError(
+                    err.message
+                );
+
+            }
+
+        };
+
+        document
+        .getElementById('username')
+        .innerText =
+            localStorage.getItem(
+                'username'
+            ) || 'ادمین';
+
+        document
+        .getElementById('logoutBtn')
+        ?.addEventListener(
+            'click',
+            () => AuthAPI.logout()
+        );
+
+        document
+        .getElementById('changePasswordBtn')
+        ?.addEventListener(
+            'click',
+            () => {
+                document
+                .getElementById(
+                    'changePasswordModal'
+                )
+                .classList
+                .add('active');
+            }
+        );
+
+        document
+        .getElementById('closePwdModalBtn')
+        ?.addEventListener(
+            'click',
+            () => {
+                document
+                .getElementById(
+                    'changePasswordModal'
+                )
+                .classList
+                .remove('active');
+            }
+        );
+
         loadUsers();
+
+    });
     </script>
 </body>
 </html>
