@@ -7,7 +7,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from .models import User
 from .serializers import (
     UserSerializer, UserCreateSerializer, UserUpdateSerializer,
-    ChangePasswordSerializer, UserListSerializer
+    ChangePasswordSerializer, UserListSerializer, AdminUserUpdateSerializer
 )
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -33,6 +33,8 @@ class UserViewSet(viewsets.ModelViewSet):
         if self.action == 'create':
             return UserCreateSerializer
         elif self.action in ['update', 'partial_update']:
+            if self.request.user.is_admin:
+                return AdminUserUpdateSerializer
             return UserUpdateSerializer
         elif self.action == 'list':
             return UserListSerializer

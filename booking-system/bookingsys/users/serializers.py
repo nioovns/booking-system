@@ -50,7 +50,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = [
-            'first_name', 'last_name', 'email', 'phone_number', 'avatar'
+            'username','first_name', 'last_name', 'email', 'phone_number','avatar'
         ]
     
     def validate_email(self, value):
@@ -138,3 +138,26 @@ class CustomerDashboardSerializer(serializers.Serializer):
     completed_bookings = serializers.IntegerField()
     total_spent = serializers.IntegerField()
     recent_bookings = serializers.ListField()
+    
+class AdminUserUpdateSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True, required=False, allow_blank=True)
+
+    class Meta:
+        model = User
+        fields = [
+            'username',
+            'role',
+            'password'
+        ]
+
+    def update(self, instance, validated_data):
+        password = validated_data.pop('password', None)
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+
+        if password:
+            instance.set_password(password)
+
+        instance.save()
+        return instance

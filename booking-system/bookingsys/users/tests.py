@@ -92,7 +92,6 @@ class UserAPITest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertGreaterEqual(response.data['count'], 3)
 
-    
     def test_05_user_list_non_admin(self):
         login_url = '/api/users/login/'
         response = self.client.post(login_url, {
@@ -128,6 +127,7 @@ class UserAPITest(APITestCase):
         
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['user']['first_name'], 'علی جدید')
+        self.assertEqual(response.data['user']['last_name'], 'رضایی جدید')
     
     def test_07_change_password(self):
         login_url = '/api/users/login/'
@@ -374,3 +374,51 @@ class UserAPITest(APITestCase):
         
         customer_stats_access = self.client.get('/api/users/customer_stats/')
         self.assertEqual(customer_stats_access.status_code, status.HTTP_403_FORBIDDEN)
+        
+    def test_17_admin_update_user_by_id(self):
+        response = self.client.post('/api/users/login/', {
+            'username': 'admin',
+            'password': 'admin123'
+        }, format='json')
+
+        token = response.data['access']
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {token}')
+
+        url = f'/api/users/{self.customer.id}/'
+
+        data = {
+            'username': 'new_username',
+            'role': User.Roles.SERVICE_PROVIDER,
+            'password': 'newpass123'
+        }
+
+        response = self.client.patch(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        self.assertEqual(response.data['username'], 'new_username')
+        self.assertEqual(response.data['role'], User.Roles.SERVICE_PROVIDER)
+
+        self.customer.refresh_from_db()
+        self.assertEqual(self.customer.username, 'new_username')
+        self.assertTrue(self.customer.check_password('newpass123'))   
+
+    def test_18_admin_delete_user(self):
+        login_url = '/api/users/login/'
+        response = self.client.post(login_url, {
+            'username': 'admin',
+            'password': 'admin123'
+        }, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        token = response.data['access']
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {token}')
+
+        user_id = self.customer.id
+        url = f'/api/users/{user_id}/'
+
+        response = self.client.delete(url)
+
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertFalse(User.objects.filter(id=user_id).exists())
