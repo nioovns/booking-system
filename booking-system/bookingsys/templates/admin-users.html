@@ -522,6 +522,24 @@
         const menuOverlay = document.getElementById('menuOverlay');
         const menuToggleBtn = document.getElementById('menuToggleBtn');
 
+        const userModal = document.getElementById('userModal');
+        const saveBtn = document.getElementById('saveUserBtn');
+
+        const usernameInput =
+            document.getElementById('modalUsername');
+
+        const passwordInput =
+            document.getElementById('modalPassword');
+
+        const roleInput =
+            document.getElementById('modalRole');
+
+        const roleMap = {
+            admin: 'ادمین',
+            customer: 'مشتری',
+            service_provider: 'ارائه‌دهنده'
+        };
+
         function toggleMenu() {
             sidebar.classList.toggle('open');
             menuOverlay.classList.toggle('active');
@@ -535,30 +553,36 @@
         menuToggleBtn?.addEventListener('click', toggleMenu);
         menuOverlay?.addEventListener('click', toggleMenu);
 
-        const roleMap = {
-            admin: 'ادمین',
-            customer: 'مشتری',
-            service_provider: 'ارائه‌دهنده'
-        };
+        function closeModal() {
+            userModal.classList.remove('active');
+
+            usernameInput.value = '';
+            passwordInput.value = '';
+            roleInput.value = 'customer';
+
+            delete saveBtn.dataset.editId;
+        }
 
         async function loadUsers() {
+
             try {
 
-                const data = await AdminAPI.getUsers();
+                const data =
+                    await AdminAPI.getUsers();
 
-                console.log('USERS=', data);
-
-                const users = data.results || [];
+                const users =
+                    data.results || [];
 
                 const tbody =
-                    document.getElementById('usersTableBody');
+                    document.getElementById(
+                        'usersTableBody'
+                    );
 
                 if (!users.length) {
 
                     tbody.innerHTML = `
                         <tr>
-                            <td colspan="4"
-                            style="text-align:center;">
+                            <td colspan="4">
                                 هیچ کاربری یافت نشد
                             </td>
                         </tr>
@@ -568,11 +592,12 @@
                 }
 
                 tbody.innerHTML =
-                    users.map(user => `
+                users.map(user => `
+
                     <tr>
 
                         <td>
-                            ${user.username || '-'}
+                            ${user.username}
                         </td>
 
                         <td>
@@ -580,7 +605,11 @@
                             <span
                             class="role-badge role-${user.role}">
 
-                                ${roleMap[user.role] || user.role}
+                                ${
+                                    roleMap[user.role]
+                                    ||
+                                    user.role
+                                }
 
                             </span>
 
@@ -590,10 +619,15 @@
 
                             ${
                                 user.date_joined
-                                ? new Date(
+                                ?
+                                new Date(
                                     user.date_joined
-                                ).toLocaleDateString('fa-IR')
-                                : '-'
+                                )
+                                .toLocaleDateString(
+                                    'fa-IR'
+                                )
+                                :
+                                '-'
                             }
 
                         </td>
@@ -601,184 +635,225 @@
                         <td class="action-buttons">
 
                             <button
-                                type="button"
-                                class="btn-edit"
-                                onclick="editUser(${user.id})">
+                            class="btn-edit"
+                            onclick="editUser(${user.id})">
 
-                                <i class="fas fa-edit"></i>
+                                <i
+                                class="fas fa-edit">
+                                </i>
 
                             </button>
 
                             <button
-                                type="button"
-                                class="btn-delete"
-                                onclick="deleteUser(${user.id})">
+                            class="btn-delete"
+                            onclick="deleteUser(${user.id})">
 
-                                <i class="fas fa-trash"></i>
+                                <i
+                                class="fas fa-trash">
+                                </i>
 
                             </button>
 
                         </td>
 
                     </tr>
+
                 `).join('');
 
             }
 
-            catch(err) {
+            catch(err){
 
-                console.error(err);
+                console.log(err);
 
                 showError(
-                    err.message ||
+                    err.message
+                    ||
                     'خطا در بارگذاری کاربران'
                 );
             }
+
         }
 
         document
         .getElementById('addUserBtn')
         ?.addEventListener('click', () => {
 
+            closeModal();
+
             document
             .getElementById('modalTitle')
             .innerText =
             'افزودن کاربر جدید';
 
-            document
-            .getElementById('modalUsername')
-            .value = '';
-
-            document
-            .getElementById('modalPassword')
-            .value = '';
-
-            document
-            .getElementById('modalRole')
-            .value = 'customer';
-
-            document
-            .getElementById('userModal')
-            .classList
-            .add('active');
+            userModal.classList.add('active');
 
         });
 
         document
         .getElementById('closeModalBtn')
-        ?.addEventListener('click', () => {
-
-            document
-            .getElementById('userModal')
-            .classList
-            .remove('active');
-
-        });
-
-        document
-        .getElementById('saveUserBtn')
         ?.addEventListener(
+            'click',
+            closeModal
+        );
+
+        // ========== اصلاح شده: تابع ذخیره کاربر ==========
+        saveBtn.addEventListener(
             'click',
             async () => {
 
-            const username =
-                document
-                .getElementById('modalUsername')
-                .value
-                .trim();
-
-            const password =
-                document
-                .getElementById('modalPassword')
-                .value;
-
-            const role =
-                document
-                .getElementById('modalRole')
-                .value;
-
-            if (!username || !password) {
-                showError(
-                    'نام کاربری و رمز عبور الزامی است'
-                );
-                return;
-            }
-
             try {
 
-                await AdminAPI.createUser(
-                    username,
-                    password,
-                    role
-                );
+                const username =
+                    usernameInput.value.trim();
 
-                showSuccess(
-                    'کاربر ایجاد شد'
-                );
+                const password =
+                    passwordInput.value;
 
-                document
-                .getElementById('userModal')
-                .classList
-                .remove('active');
+                const role =
+                    roleInput.value;
 
-                loadUsers();
+                const editId =
+                    saveBtn.dataset.editId;
+
+                if (!username) {
+
+                    showError(
+                        'نام کاربری الزامی است'
+                    );
+
+                    return;
+                }
+
+                // ====== اصلاح payload ======
+                // ====== اصلاح payload ======
+                const payload = {
+                    username: username,
+                    password: password,
+                    password_confirm: password,  // ← این خط را اضافه کن (خیلی مهم!)
+                    role: role,
+                    email: `${username}_${Date.now()}@example.com`,
+                    first_name: username,
+                    last_name: username,
+                    phone_number: `0912${String(Date.now()).slice(-7)}`  // شماره یکتا
+                };
+
+                // اگر رمز وارد شده بود، اضافه کن
+                if (password) {
+                    payload.password = password;
+                }
+
+                if (editId) {
+                    // ====== برای ویرایش ======
+                    const updatePayload = {
+                        username: username,
+                        role: role,
+                        email: `${username}_${Date.now()}@example.com`,
+                        first_name: username,
+                        last_name: username,
+                        phone_number: `0912${String(Date.now()).slice(-7)}`
+                    };
+    
+                    // فقط اگر رمز وارد شده بود، آن را ارسال کن
+                    if (password) {
+                        updatePayload.password = password;
+                        updatePayload.password_confirm = password;
+                    }
+    
+                    console.log('📤 ارسال برای ویرایش:', updatePayload);
+                    await AdminAPI.updateUser(editId, updatePayload);
+                    showSuccess('کاربر ویرایش شد');
+                }   
+
+                closeModal();
+                await loadUsers();
 
             }
 
-            catch(err) {
-                showError(err.message);
+            catch(err){
+
+                console.log(err);
+
+                showError(
+                    err.message
+                    ||
+                    'خطا در ارتباط با سرور'
+                );
+
             }
 
         });
 
-        window.editUser = async (id) => {
-            try {
-                const data = await AdminAPI.getUsers();
+        window.editUser =
+        async function(id){
 
-                const users = data.results || [];
-                const user = users.find(u => u.id === id);
+            try{
 
-                if (!user) {
-                    showError('کاربر پیدا نشد');
+                const data =
+                    await AdminAPI.getUsers();
+
+                const user =
+                    data.results.find(
+                        x => x.id === id
+                    );
+
+                if(!user){
+
+                    showError(
+                        'کاربر پیدا نشد'
+                    );
+
                     return;
                 }
 
-                document.getElementById('modalTitle').innerText =
-                    'ویرایش کاربر';
+                document
+                .getElementById(
+                    'modalTitle'
+                )
+                .innerText =
+                'ویرایش کاربر';
 
-                document.getElementById('modalUsername').value =
-                    user.username || '';
+                usernameInput.value =
+                    user.username;
 
-                document.getElementById('modalPassword').value = '';
+                passwordInput.value =
+                    '';
 
-                document.getElementById('modalRole').value =
-                    user.role === 'service_provider'
-                        ? 'provider'
-                        : user.role;
+                roleInput.value =
+                    user.role;
 
-                document.getElementById('saveUserBtn')
-                    .setAttribute('data-edit-id', id);
+                saveBtn.dataset.editId =
+                    user.id;
 
-                document.getElementById('userModal')
-                    .classList.add('active');
+                userModal.classList.add(
+                    'active'
+                );
 
-            } catch (err) {
-                showError(err.message);
             }
+
+            catch(err){
+
+                showError(
+                    err.message
+                );
+
+            }
+
         };
 
         window.deleteUser =
-        async function(id) {
+        async function(id){
 
-            if (
+            if(
                 !confirm(
                     'از حذف مطمئن هستید؟'
                 )
             ) return;
 
-            try {
+            try{
 
-                await AdminAPI.deleteUser(id);
+                await AdminAPI
+                .deleteUser(id);
 
                 showSuccess(
                     'کاربر حذف شد'
@@ -788,7 +863,7 @@
 
             }
 
-            catch(err) {
+            catch(err){
 
                 showError(
                     err.message
@@ -799,45 +874,25 @@
         };
 
         document
-        .getElementById('username')
+        .getElementById(
+            'username'
+        )
         .innerText =
-            localStorage.getItem(
+            localStorage
+            .getItem(
                 'username'
-            ) || 'ادمین';
+            )
+            ||
+            'ادمین';
 
         document
-        .getElementById('logoutBtn')
+        .getElementById(
+            'logoutBtn'
+        )
         ?.addEventListener(
             'click',
-            () => AuthAPI.logout()
-        );
-
-        document
-        .getElementById('changePasswordBtn')
-        ?.addEventListener(
-            'click',
-            () => {
-                document
-                .getElementById(
-                    'changePasswordModal'
-                )
-                .classList
-                .add('active');
-            }
-        );
-
-        document
-        .getElementById('closePwdModalBtn')
-        ?.addEventListener(
-            'click',
-            () => {
-                document
-                .getElementById(
-                    'changePasswordModal'
-                )
-                .classList
-                .remove('active');
-            }
+            () =>
+            AuthAPI.logout()
         );
 
         loadUsers();

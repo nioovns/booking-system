@@ -158,13 +158,50 @@ const AdminAPI = {
         return handleResponse(response);
     },
 
-    createUser: async (username, password, role) => {
-        const response = await fetch(`${BASE_URL}/users/`, {
-            method: 'POST',
+    createUser: async (userData) => {
+        console.log('📤 داده‌های ارسالی برای ایجاد کاربر:', userData);
+        try {
+            const response = await fetch(`${BASE_URL}/users/`, {
+                method: 'POST',
+                headers: getHeaders(),
+                body: JSON.stringify(userData)
+            });
+            const data = await response.json();
+            console.log('📥 پاسخ از سرور:', data);
+            if (!response.ok) {
+                throw new Error(data.error || data.detail || JSON.stringify(data));
+            }
+            return data;
+        } catch (error) {
+            console.error('❌ خطا در createUser:', error);
+            throw error;
+        }
+    },
+
+    updateUser: async (userId, userData) => {
+        console.log('📤 داده‌های ارسالی برای ویرایش کاربر:', userData);
+    
+        // فیلدهای خالی رو حذف کن
+        const cleanData = {};
+        for (const key in userData) {
+            if (userData[key] !== undefined && userData[key] !== null && userData[key] !== '') {
+                cleanData[key] = userData[key];
+            }
+        }
+    
+        const response = await fetch(`${BASE_URL}/users/${userId}/`, {
+            method: 'PATCH',
             headers: getHeaders(),
-            body: JSON.stringify({ username, password, role })
+            body: JSON.stringify(cleanData)
         });
-        return handleResponse(response);
+    
+        const data = await response.json();
+        console.log('📥 پاسخ ویرایش:', data);
+    
+        if (!response.ok) {
+            throw new Error(data.error || data.detail || 'خطا در ویرایش کاربر');
+        }
+        return data;
     },
 
     deleteUser: async (userId) => {
