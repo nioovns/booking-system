@@ -689,62 +689,66 @@
         async function loadDashboard() {
             try {
                 const data = await AdminAPI.getDashboardData();
-                
-                document.getElementById('totalUsers').innerText = data.totalUsers;
-                document.getElementById('totalCustomers').innerText = data.totalCustomers;
-                document.getElementById('totalProviders').innerText = data.totalProviders;
-                document.getElementById('todayBookings').innerText = data.todayBookings;
-                document.getElementById('weeklyBookings').innerText = data.weeklyBookings;
-                document.getElementById('totalBookings').innerText = data.totalBookings;
-                document.getElementById('activeServices').innerText = data.activeServices;
-                document.getElementById('inactiveServices').innerText = data.inactiveServices;
-                document.getElementById('totalRevenue').innerText = (data.totalRevenue || 0).toLocaleString() + ' تومان';
-                
-                if (weeklyChart) weeklyChart.destroy();
+
+                document.getElementById('totalUsers').innerText =
+                    data.users?.total || 0;
+
+                document.getElementById('totalCustomers').innerText =
+                    data.users?.customer || 0;
+
+                document.getElementById('totalProviders').innerText =
+                    data.users?.provider || 0;
+
+                document.getElementById('todayBookings').innerText =
+                    data.bookings?.today || 0;
+
+                document.getElementById('weeklyBookings').innerText =
+                    data.bookings?.week || 0;
+
+                document.getElementById('totalBookings').innerText =
+                    data.bookings?.total || 0;
+
+                document.getElementById('activeServices').innerText =
+                    data.services?.active || 0;
+
+                document.getElementById('inactiveServices').innerText =
+                    data.services?.inactive || 0;
+
+                document.getElementById('totalRevenue').innerText =
+                    (data.income?.total || 0).toLocaleString() + ' تومان';
+
+                if (weeklyChart) {
+                    weeklyChart.destroy();
+                }
+
                 const ctx = document.getElementById('weeklyChart').getContext('2d');
+
                 weeklyChart = new Chart(ctx, {
                     type: 'bar',
                     data: {
-                        labels: ['شنبه', 'یکشنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنجشنبه', 'جمعه'],
+                        labels: [
+                            'شنبه',
+                            'یکشنبه',
+                            'دوشنبه',
+                            'سه‌شنبه',
+                            'چهارشنبه',
+                            'پنجشنبه',
+                            'جمعه'
+                        ],
                         datasets: [{
-                            label: 'تعداد رزرو',
-                            data: data.weeklyChartData || [0, 0, 0, 0, 0, 0, 0],
-                            backgroundColor: '#2563EB',
-                            borderRadius: 6,
-                            barPercentage: 0.7
+                            label: 'رزرو',
+                            data: [0,0,0,0,0,0,0],
+                            backgroundColor: '#2563EB'
                         }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: true,
-                        plugins: { 
-                            legend: { 
-                                display: false
-                            } 
-                        }
                     }
                 });
-                
-                if (data.topServices && data.topServices.length > 0) {
-                    document.getElementById('topServicesList').innerHTML = data.topServices.map((service, index) => `
-                        <div class="rank-row">
-                            <div class="rank-number">${index + 1}</div>
-                            <div class="rank-info">
-                                <div class="rank-name">${service.name}</div>
-                                <div class="rank-count">${service.providerName | ''}</div>
-                            </div>
-                            <div class="rank-value">${service.bookingCount} رزرو</div>
-                        </div>
-                    `).join('');
-                } else {
-                    document.getElementById('topServicesList').innerHTML = '<div style="text-align:center; padding:20px;">هیچ سرویسی یافت نشد</div>';
-                }
-            } catch(err) {
-                showError('خطا در بارگذاری داشبورد');
+
+            } catch (err) {
                 console.error(err);
+                showError('خطا در بارگذاری داشبورد');
             }
         }
-        
+
         loadDashboard();
     </script>
 </body>
