@@ -484,13 +484,19 @@
             showSuccess('ورود موفق! در حال انتقال...');
 
             setTimeout(() => {
+
                 const dashboards = {
-                    'admin': '/admin-dashboard/',
-                    'provider': '/provider-services/',
-                    'customer': '/customer-services/'
+                    admin: '/admin-dashboard/',
+                    service_provider: '/provider-services/',
+                    customer: '/customer-services/'
                 };
-                const dashboardUrl = dashboards[userRole] || '/customer-services/';
-                window.location.href = dashboardUrl;
+
+                console.log('ROLE=', userRole);
+
+                window.location.href =
+                    dashboards[userRole]
+                    || '/customer-services/';
+
             }, 1000);
 
         } catch (err) {

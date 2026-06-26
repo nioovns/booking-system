@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     
     <style>
+        /* ===== استایل‌ها مثل قبل ===== */
         .menu-overlay {
             position: fixed;
             top: 0;
@@ -25,11 +26,7 @@
             visibility: hidden;
             transition: all 0.3s ease;
         }
-        
-        .menu-overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
+        .menu-overlay.active { opacity: 1; visibility: visible; }
         
         .sidebar {
             position: fixed;
@@ -45,10 +42,7 @@
             box-shadow: -8px 0 30px rgba(0, 0, 0, 0.2);
             overflow: hidden;
         }
-        
-        .sidebar.open {
-            width: 240px;
-        }
+        .sidebar.open { width: 240px; }
         
         .sidebar-header {
             padding: 24px 0 16px;
@@ -69,44 +63,14 @@
             cursor: pointer;
             transition: all 0.25s ease;
         }
+        .menu-toggle-item i { font-size: 22px; width: 28px; text-align: center; }
+        .menu-toggle-item .menu-text { font-size: 13px; font-weight: 500; display: none; letter-spacing: 0.3px; }
+        .sidebar.open .menu-toggle-item { justify-content: flex-start; padding: 10px 16px; margin: 0 12px; }
+        .sidebar.open .menu-toggle-item .menu-text { display: inline; }
+        .menu-toggle-item:hover { background: rgba(255, 255, 255, 0.08); color: white; }
         
-        .menu-toggle-item i {
-            font-size: 22px;
-            width: 28px;
-            text-align: center;
-        }
-        
-        .menu-toggle-item .menu-text {
-            font-size: 13px;
-            font-weight: 500;
-            display: none;
-            letter-spacing: 0.3px;
-        }
-        
-        .sidebar.open .menu-toggle-item {
-            justify-content: flex-start;
-            padding: 10px 16px;
-            margin: 0 12px;
-        }
-        
-        .sidebar.open .menu-toggle-item .menu-text {
-            display: inline;
-        }
-        
-        .menu-toggle-item:hover {
-            background: rgba(255, 255, 255, 0.08);
-            color: white;
-        }
-        
-        .sidebar-menu {
-            list-style: none;
-            padding: 0;
-        }
-        
-        .sidebar-menu li {
-            margin: 4px 0;
-        }
-        
+        .sidebar-menu { list-style: none; padding: 0; }
+        .sidebar-menu li { margin: 4px 0; }
         .sidebar-menu a {
             display: flex;
             align-items: center;
@@ -122,50 +86,14 @@
             font-size: 14px;
             font-weight: 450;
         }
-        
-        .sidebar-menu a i {
-            font-size: 22px;
-            width: 28px;
-            text-align: center;
-        }
-        
-        .sidebar-menu a .menu-text {
-            display: none;
-            font-size: 13px;
-        }
-        
-        .sidebar.open .sidebar-menu a {
-            justify-content: flex-start;
-            padding: 10px 16px;
-            margin: 0 12px;
-        }
-        
-        .sidebar.open .sidebar-menu a .menu-text {
-            display: inline;
-        }
-        
-        .sidebar-menu a:hover {
-            background: rgba(255, 255, 255, 0.06);
-            color: white;
-        }
-        
-        .sidebar-menu a.active {
-            background: rgba(37, 99, 235, 0.15);
-            color: white;
-        }
-        
-        .sidebar-menu a.active i {
-            background: #2563EB;
-            color: white;
-            border-radius: 50%;
-            padding: 6px;
-            width: 34px;
-            margin-right: -3px;
-        }
-        
-        .sidebar.open .sidebar-menu a.active i {
-            margin-right: 0;
-        }
+        .sidebar-menu a i { font-size: 22px; width: 28px; text-align: center; }
+        .sidebar-menu a .menu-text { display: none; font-size: 13px; }
+        .sidebar.open .sidebar-menu a { justify-content: flex-start; padding: 10px 16px; margin: 0 12px; }
+        .sidebar.open .sidebar-menu a .menu-text { display: inline; }
+        .sidebar-menu a:hover { background: rgba(255, 255, 255, 0.06); color: white; }
+        .sidebar-menu a.active { background: rgba(37, 99, 235, 0.15); color: white; }
+        .sidebar-menu a.active i { background: #2563EB; color: white; border-radius: 50%; padding: 6px; width: 34px; margin-right: -3px; }
+        .sidebar.open .sidebar-menu a.active i { margin-right: 0; }
         
         .main-content {
             margin-right: 70px;
@@ -182,25 +110,10 @@
             padding-bottom: 16px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.08);
         }
+        .page-title { color: white; font-size: 26px; font-weight: 600; letter-spacing: -0.3px; }
         
-        .page-title {
-            color: white;
-            font-size: 26px;
-            font-weight: 600;
-            letter-spacing: -0.3px;
-        }
-        
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-        
-        .user-name {
-            color: rgba(255, 255, 255, 0.85);
-            font-weight: 500;
-            font-size: 14px;
-        }
+        .user-info { display: flex; align-items: center; gap: 16px; }
+        .user-name { color: rgba(255, 255, 255, 0.85); font-weight: 500; font-size: 14px; }
         
         .btn-icon {
             background: rgba(255, 255, 255, 0.06);
@@ -212,11 +125,7 @@
             border-radius: 30px;
             transition: all 0.2s;
         }
-        
-        .btn-icon:hover {
-            background: rgba(255, 255, 255, 0.12);
-            color: white;
-        }
+        .btn-icon:hover { background: rgba(255, 255, 255, 0.12); color: white; }
         
         .services-container {
             background: rgba(255, 255, 255, 0.94);
@@ -233,13 +142,7 @@
             flex-wrap: wrap;
             gap: 15px;
         }
-        
-        .table-header h2 {
-            color: #1F2937;
-            font-size: 18px;
-            font-weight: 600;
-            margin: 0;
-        }
+        .table-header h2 { color: #1F2937; font-size: 18px; font-weight: 600; margin: 0; }
         
         .btn-add {
             background: #2563EB;
@@ -256,11 +159,7 @@
             align-items: center;
             gap: 8px;
         }
-        
-        .btn-add:hover {
-            background: #1D4ED8;
-            transform: translateY(-1px);
-        }
+        .btn-add:hover { background: #1D4ED8; transform: translateY(-1px); }
         
         .service-card-item {
             background: white;
@@ -270,10 +169,7 @@
             border: 1px solid #E5E7EB;
             transition: all 0.2s;
         }
-        
-        .service-card-item:hover {
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-        }
+        .service-card-item:hover { box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); }
         
         .service-header {
             display: flex;
@@ -283,29 +179,11 @@
             flex-wrap: wrap;
             gap: 10px;
         }
+        .service-title { font-size: 18px; font-weight: 700; color: #1F2937; }
         
-        .service-title {
-            font-size: 18px;
-            font-weight: 700;
-            color: #1F2937;
-        }
-        
-        .service-status {
-            padding: 4px 12px;
-            border-radius: 30px;
-            font-size: 12px;
-            font-weight: 500;
-        }
-        
-        .status-active {
-            background: #D1FAE5;
-            color: #059669;
-        }
-        
-        .status-inactive {
-            background: #FEE2E2;
-            color: #DC2626;
-        }
+        .service-status { padding: 4px 12px; border-radius: 30px; font-size: 12px; font-weight: 500; }
+        .status-active { background: #D1FAE5; color: #059669; }
+        .status-inactive { background: #FEE2E2; color: #DC2626; }
         
         .service-image {
             width: 80px;
@@ -318,7 +196,6 @@
             justify-content: center;
             margin-left: 15px;
         }
-        
         .service-image-placeholder {
             width: 80px;
             height: 80px;
@@ -331,7 +208,6 @@
             font-size: 30px;
             position: relative;
         }
-        
         .service-image-placeholder::after {
             content: '';
             position: absolute;
@@ -348,19 +224,8 @@
             gap: 12px;
             margin-top: 10px;
         }
-        
-        .detail-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 13px;
-            color: #6B7280;
-        }
-        
-        .detail-item i {
-            width: 20px;
-            color: #2563EB;
-        }
+        .detail-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #6B7280; }
+        .detail-item i { width: 20px; color: #2563EB; }
         
         .service-description {
             margin-top: 12px;
@@ -371,12 +236,7 @@
             line-height: 1.5;
         }
         
-        .service-actions {
-            display: flex;
-            gap: 8px;
-            margin-top: 15px;
-            justify-content: flex-end;
-        }
+        .service-actions { display: flex; gap: 8px; margin-top: 15px; justify-content: flex-end; }
         
         .btn-edit, .btn-delete, .btn-slots {
             background: none;
@@ -387,32 +247,14 @@
             border-radius: 8px;
             transition: all 0.2s;
         }
+        .btn-edit { color: #2563EB; }
+        .btn-edit:hover { background: #EFF6FF; }
+        .btn-delete { color: #EF4444; }
+        .btn-delete:hover { background: #FEE2E2; }
+        .btn-slots { color: #F59E0B; }
+        .btn-slots:hover { background: #FEF3C7; }
         
-        .btn-edit {
-            color: #2563EB;
-        }
-        
-        .btn-edit:hover {
-            background: #EFF6FF;
-        }
-        
-        .btn-delete {
-            color: #EF4444;
-        }
-        
-        .btn-delete:hover {
-            background: #FEE2E2;
-        }
-        
-        .btn-slots {
-            color: #F59E0B;
-        }
-        
-        .btn-slots:hover {
-            background: #FEF3C7;
-        }
-        
-        /* مودال سرویس */
+        /* مودال‌ها */
         .modal {
             display: none;
             position: fixed;
@@ -425,10 +267,7 @@
             align-items: center;
             justify-content: center;
         }
-        
-        .modal.active {
-            display: flex;
-        }
+        .modal.active { display: flex; }
         
         .modal-content {
             background: white;
@@ -440,7 +279,6 @@
             overflow-y: visible;
             position: relative;
         }
-        
         .modal-close {
             position: absolute;
             top: 15px;
@@ -457,19 +295,8 @@
             align-items: center;
             justify-content: center;
         }
-        
-        .modal-close:hover {
-            background: #F3F4F6;
-            color: #4B5563;
-        }
-        
-        .modal-content h3 {
-            margin-bottom: 20px;
-            color: #1F2937;
-            font-size: 20px;
-            padding-left: 40px;
-        }
-        
+        .modal-close:hover { background: #F3F4F6; color: #4B5563; }
+        .modal-content h3 { margin-bottom: 20px; color: #1F2937; font-size: 20px; padding-left: 40px; }
         .modal-content input, .modal-content select, .modal-content textarea {
             width: 100%;
             padding: 12px;
@@ -479,28 +306,14 @@
             font-family: 'Vazirmatn';
             font-size: 14px;
         }
-        
-        .modal-content textarea {
-            resize: vertical;
-            min-height: 80px;
-        }
-        
+        .modal-content textarea { resize: vertical; min-height: 80px; }
         .modal-content input:focus, .modal-content select:focus, .modal-content textarea:focus {
             outline: none;
             border-color: #2563EB;
         }
+        .modal-buttons { display: flex; gap: 12px; margin-top: 20px; }
         
-        .modal-buttons {
-            display: flex;
-            gap: 12px;
-            margin-top: 20px;
-        }
-        
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         
         .image-upload-area {
             border: 2px dashed #E5E7EB;
@@ -511,11 +324,7 @@
             transition: all 0.2s;
             margin: 10px 0;
         }
-        
-        .image-upload-area:hover {
-            border-color: #2563EB;
-            background: #EFF6FF;
-        }
+        .image-upload-area:hover { border-color: #2563EB; background: #EFF6FF; }
         
         .image-preview {
             width: 100px;
@@ -524,7 +333,6 @@
             object-fit: cover;
             margin: 10px auto;
         }
-        
         .image-preview-placeholder {
             width: 100px;
             height: 100px;
@@ -538,7 +346,6 @@
             font-size: 40px;
             position: relative;
         }
-        
         .image-preview-placeholder::after {
             content: '';
             position: absolute;
@@ -548,64 +355,20 @@
             transform: rotate(45deg);
         }
         
-        .slots-list {
-            max-height: 300px;
-            overflow-y: auto;
-            margin: 15px 0;
-        }
+        .slots-list { max-height: 300px; overflow-y: auto; margin: 15px 0; }
+        .slot-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #E5E7EB; }
+        .slot-time { font-size: 14px; color: #1F2937; }
+        .btn-delete-slot { background: none; border: none; color: #EF4444; cursor: pointer; padding: 5px 10px; }
         
-        .slot-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px;
-            border-bottom: 1px solid #E5E7EB;
-        }
-        
-        .slot-time {
-            font-size: 14px;
-            color: #1F2937;
-        }
-        
-        .btn-delete-slot {
-            background: none;
-            border: none;
-            color: #EF4444;
-            cursor: pointer;
-            padding: 5px 10px;
-        }
-        
-        .add-slot-form {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-        }
-        
-        .add-slot-form input {
-            flex: 1;
-            padding: 10px;
-            border: 1px solid #E5E7EB;
-            border-radius: 12px;
-        }
+        .add-slot-form { display: flex; gap: 10px; margin-top: 15px; }
+        .add-slot-form input { flex: 1; padding: 10px; border: 1px solid #E5E7EB; border-radius: 12px; }
         
         @media (max-width: 800px) {
-            .main-content {
-                margin-right: 0;
-                padding: 16px;
-            }
-            .sidebar {
-                right: -70px;
-            }
-            .sidebar.open {
-                right: 0;
-            }
-            .form-row {
-                grid-template-columns: 1fr;
-                gap: 0;
-            }
-            .service-details {
-                grid-template-columns: 1fr;
-            }
+            .main-content { margin-right: 0; padding: 16px; }
+            .sidebar { right: -70px; }
+            .sidebar.open { right: 0; }
+            .form-row { grid-template-columns: 1fr; gap: 0; }
+            .service-details { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -674,7 +437,7 @@
             
             <div class="form-row">
                 <select id="serviceCategory">
-                    <!--JavaScript-->
+                    <!-- توسط JavaScript پر می‌شود -->
                 </select>
                 <select id="serviceStatus">
                     <option value="active">فعال</option>
@@ -716,11 +479,23 @@
     
     <script src="{% static 'js/api.js' %}"></script>
     <script>
+        // ============================================================
+        // ================== تنظیمات ==================================
+        // ============================================================
+        // BASE_URL از api.js گرفته می‌شود، اما اگر نشد:
+        //const BASE_URL = window.BASE_URL || 'http://127.0.0.1:8000/api';
+
+        // ============================================================
+        // ================== متغیرهای سراسری ========================
+        // ============================================================
         let categoriesList = [];
         let currentServiceId = null;
         let selectedImageFile = null;
         let currentSlotServiceId = null;
 
+        // ============================================================
+        // ================== منوی همبرگری ===========================
+        // ============================================================
         const sidebar = document.getElementById('sidebar');
         const menuOverlay = document.getElementById('menuOverlay');
         const menuToggleBtn = document.getElementById('menuToggleBtn');
@@ -740,10 +515,13 @@
         if (menuToggleBtn) menuToggleBtn.addEventListener('click', toggleMenu);
         if (menuOverlay) menuOverlay.addEventListener('click', toggleMenu);
 
+        // ============================================================
+        // ================== پروفایل و خروج ===========================
+        // ============================================================
         const profileBtn = document.getElementById('profileBtn');
         if (profileBtn) {
             profileBtn.addEventListener('click', () => {
-                window.location.href = 'provider-profile.html';
+                window.location.href = '/provider-profile/';
             });
         }
         
@@ -754,11 +532,17 @@
             });
         }
 
+        // ============================================================
+        // ================== نام کاربر ==============================
+        // ============================================================
         const usernameSpan = document.getElementById('username');
         if (usernameSpan) {
             usernameSpan.innerText = localStorage.getItem('username') || 'ارائه‌دهنده';
         }
 
+        // ============================================================
+        // ================== بستن مودال‌ها ===========================
+        // ============================================================
         window.closeServiceModal = () => {
             document.getElementById('serviceModal').classList.remove('active');
         };
@@ -767,54 +551,103 @@
             document.getElementById('slotsModal').classList.remove('active');
         };
 
+        // ============================================================
+        // ================== دریافت دسته‌بندی‌ها ======================
+        // ============================================================
         async function loadCategories() {
             try {
-                const response = await fetch(`${BASE_URL}/services/categories/`, {
-                    headers: getHeaders()
-                });
+                const token = localStorage.getItem('token');
+
+                const response = await fetch(
+                    `${BASE_URL}/services/categories/`,
+                    {
+                        headers: {
+                            Authorization: token ? `Bearer ${token}` : ''
+                        }
+                    }
+                );
+
                 const data = await response.json();
-                categoriesList = data;
-                return data;
-            } catch (error) {
-                console.error('خطا در دریافت دسته‌بندی‌ها:', error);
-                return [
-                    { id: 1, name: 'تعمیرات' },
-                    { id: 2, name: 'زیبایی' },
-                    { id: 3, name: 'آموزش' },
-                    { id: 4, name: 'نظافتی' },
-                    { id: 5, name: 'خودرو' },
-                    { id: 6, name: 'سایر' }
-                ];
+
+                console.log('Categories API:', data);
+
+                if (Array.isArray(data)) {
+                    categoriesList = data;
+                } else if (Array.isArray(data.results)) {
+                    categoriesList = data.results;
+                } else if (Array.isArray(data.categories)) {
+                    categoriesList = data.categories;
+                } else {
+                    categoriesList = [];
+                }
+
+                console.log('categoriesList:', categoriesList);
+
+                return categoriesList;
+
+            } catch (err) {
+                console.error(err);
+                categoriesList = [];
+                return [];
             }
         }
 
+        // ============================================================
+        // ================== پر کردن سلکت دسته‌بندی =================
+        // ============================================================
         function populateCategorySelect(selectedId = null) {
-            const select = document.getElementById('serviceCategory');
-            select.innerHTML = '';
-            
-            const defaultOption = document.createElement('option');
-            defaultOption.value = '';
-            defaultOption.textContent = '— انتخاب کنید —';
-            defaultOption.disabled = true;
-            defaultOption.selected = true;
-            select.appendChild(defaultOption);
-            
+
+            const select =
+                document.getElementById('serviceCategory');
+
+            if (!select) return;
+
+            select.innerHTML = `
+                <option value="" disabled>
+                    — انتخاب کنید —
+                </option>
+            `;
+
+            if (!Array.isArray(categoriesList)) {
+                categoriesList = [];
+            }
+
+            if (!categoriesList.length) {
+                select.innerHTML += `
+                    <option disabled>
+                        دسته‌بندی پیدا نشد
+                    </option>
+                `;
+                return;
+            }
+
             categoriesList.forEach(cat => {
-                const option = document.createElement('option');
+                const option =
+                    document.createElement('option');
+
                 option.value = cat.id;
                 option.textContent = cat.name;
-                if (selectedId && cat.id == selectedId) {
+
+                if (selectedId == cat.id) {
                     option.selected = true;
                 }
+
                 select.appendChild(option);
             });
         }
 
+        // ============================================================
+        // ================== بارگذاری لیست سرویس‌ها ==================
+        // ============================================================
         async function loadServices() {
             try {
                 const services = await ProviderAPI.getMyServices();
+                const container = document.getElementById('servicesList');
+                
+                if (!container) return;
+                
                 if (services && services.length > 0) {
-                    document.getElementById('servicesList').innerHTML = services.map(service => `
+                    container.innerHTML = services.map(service => `
                         <div class="service-card-item">
                             <div class="service-header">
                                 <div class="service-title">${service.title || service.name}</div>
@@ -846,7 +679,7 @@
                         </div>
                     `).join('');
                 } else {
-                    document.getElementById('servicesList').innerHTML = '<div style="text-align: center; padding: 40px;">هیچ سرویسی یافت نشد</div>';
+                    container.innerHTML = '<div style="text-align: center; padding: 40px;">هیچ سرویسی یافت نشد</div>';
                 }
             } catch(err) {
                 showError('خطا در بارگذاری سرویس‌ها');
@@ -854,6 +687,9 @@
             }
         }
 
+        // ============================================================
+        // ================== آپلود تصویر =============================
+        // ============================================================
         const imageUploadArea = document.getElementById('imageUploadArea');
         const imageInput = document.getElementById('serviceImage');
         const modalImagePreview = document.getElementById('modalImagePreview');
@@ -871,7 +707,9 @@
                     selectedImageFile = file;
                     const reader = new FileReader();
                     reader.onload = (event) => {
-                        modalImagePreview.innerHTML = `<img src="${event.target.result}" class="image-preview" alt="پیش‌نمایش">`;
+                        if (modalImagePreview) {
+                            modalImagePreview.innerHTML = `<img src="${event.target.result}" class="image-preview" alt="پیش‌نمایش">`;
+                        }
                     };
                     reader.readAsDataURL(file);
                 }
@@ -880,30 +718,52 @@
         
         function resetImagePreview() {
             selectedImageFile = null;
-            modalImagePreview.innerHTML = `<div class="image-preview-placeholder"><i class="fas fa-camera"></i></div>`;
+            if (modalImagePreview) {
+                modalImagePreview.innerHTML = `<div class="image-preview-placeholder"><i class="fas fa-camera"></i></div>`;
+            }
         }
 
-        document.getElementById('addServiceBtn').addEventListener('click', async () => {
-            currentServiceId = null;
-            document.getElementById('modalTitle').innerText = 'افزودن سرویس جدید';
-            document.getElementById('serviceName').value = '';
-            document.getElementById('serviceDescription').value = '';
-            document.getElementById('servicePrice').value = '';
-            document.getElementById('serviceDuration').value = '';
-            document.getElementById('serviceStatus').value = 'active';
-            resetImagePreview();
-            
-            await loadCategories();
-            populateCategorySelect();
-            
-            document.getElementById('serviceModal').classList.add('active');
-        });
+        // ============================================================
+        // ================== افزودن سرویس ============================
+        // ============================================================
+        const addServiceBtn = document.getElementById('addServiceBtn');
+        if (addServiceBtn) {
+            addServiceBtn.addEventListener('click', async () => {
+                console.log('✅ دکمه افزودن سرویس کلیک شد');
+                
+                currentServiceId = null;
+                document.getElementById('modalTitle').innerText = 'افزودن سرویس جدید';
+                document.getElementById('serviceName').value = '';
+                document.getElementById('serviceDescription').value = '';
+                document.getElementById('servicePrice').value = '';
+                document.getElementById('serviceDuration').value = '';
+                document.getElementById('serviceStatus').value = 'active';
+                resetImagePreview();
+                
+                try {
+                    await loadCategories();
+                    populateCategorySelect();
+                } catch(err) {
+                    console.error('خطا در بارگذاری دسته‌بندی:', err);
+                }
+                
+                document.getElementById('serviceModal').classList.add('active');
+            });
+        } else {
+            console.error('❌ دکمه addServiceBtn پیدا نشد!');
+        }
         
-        document.getElementById('closeModalBtn').addEventListener('click', () => {
+        // ============================================================
+        // ================== بستن مودال ==============================
+        // ============================================================
+        document.getElementById('closeModalBtn')?.addEventListener('click', () => {
             document.getElementById('serviceModal').classList.remove('active');
         });
         
-        document.getElementById('saveServiceBtn').addEventListener('click', async () => {
+        // ============================================================
+        // ================== ذخیره سرویس =============================
+        // ============================================================
+        document.getElementById('saveServiceBtn')?.addEventListener('click', async () => {
             const name = document.getElementById('serviceName').value.trim();
             const category = document.getElementById('serviceCategory').value;
             const description = document.getElementById('serviceDescription').value.trim();
@@ -950,6 +810,9 @@
             }
         });
 
+        // ============================================================
+        // ================== ویرایش سرویس ============================
+        // ============================================================
         window.editService = async (id) => {
             try {
                 const services = await ProviderAPI.getMyServices();
@@ -977,6 +840,9 @@
             }
         };
 
+        // ============================================================
+        // ================== حذف سرویس ==============================
+        // ============================================================
         window.deleteService = async (id) => {
             if (confirm('آیا از حذف این سرویس اطمینان دارید؟')) {
                 try {
@@ -989,9 +855,12 @@
             }
         };
 
+        // ============================================================
+        // ================== مدیریت زمان‌بندی ========================
+        // ============================================================
         window.manageSlots = async (serviceId) => {
             currentSlotServiceId = serviceId;
-            document.getElementById('slotsModalTitle').innerHTML = `مدیریت زمان‌بندی`;
+            document.getElementById('slotsModalTitle').innerHTML = 'مدیریت زمان‌بندی';
             document.getElementById('slotsModal').classList.add('active');
             await loadSlots(serviceId);
         };
@@ -999,15 +868,18 @@
         async function loadSlots(serviceId) {
             try {
                 const slots = await ProviderAPI.getTimeSlots(serviceId);
+                const container = document.getElementById('slotsList');
+                if (!container) return;
+                
                 if (slots && slots.length > 0) {
-                    document.getElementById('slotsList').innerHTML = slots.map(slot => `
+                    container.innerHTML = slots.map(slot => `
                         <div class="slot-item">
                             <span class="slot-time">${slot.start_time_str || slot.start_time}</span>
                             <button class="btn-delete-slot" onclick="deleteSlot(${slot.id})"><i class="fas fa-trash"></i></button>
                         </div>
                     `).join('');
                 } else {
-                    document.getElementById('slotsList').innerHTML = '<div style="text-align: center; padding: 20px;">هیچ زمانی تعریف نشده است</div>';
+                    container.innerHTML = '<div style="text-align: center; padding: 20px;">هیچ زمانی تعریف نشده است</div>';
                 }
             } catch(err) {
                 showError('خطا در بارگذاری زمان‌بندی');
@@ -1026,7 +898,7 @@
             }
         };
         
-        document.getElementById('addSlotBtn').addEventListener('click', async () => {
+        document.getElementById('addSlotBtn')?.addEventListener('click', async () => {
             const time = document.getElementById('newSlotTime').value;
             if (!time) {
                 showError('لطفاً ساعت را وارد کنید');
@@ -1035,7 +907,7 @@
             
             const today = new Date().toISOString().split('T')[0];
             const startDateTime = `${today}T${time}:00`;
-            const endDateTime = `${today}T${time}:00`; 
+            const endDateTime = `${today}T${time}:00`;
             
             try {
                 await ProviderAPI.addTimeSlot(currentSlotServiceId, {
@@ -1051,14 +923,21 @@
             }
         });
         
-        document.getElementById('closeSlotsModalBtn').addEventListener('click', () => {
+        document.getElementById('closeSlotsModalBtn')?.addEventListener('click', () => {
             document.getElementById('slotsModal').classList.remove('active');
         });
 
+        // ============================================================
+        // ================== بارگذاری اولیه ==========================
+        // ============================================================
+        // بارگذاری دسته‌بندی‌ها
         loadCategories().then(() => {
-            // load categories
+            console.log('✅ دسته‌بندی‌ها بارگذاری شدند');
+        }).catch(err => {
+            console.error('❌ خطا در بارگذاری دسته‌بندی‌ها:', err);
         });
         
+        // بارگذاری لیست سرویس‌ها
         loadServices();
     </script>
 </body>
