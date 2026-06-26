@@ -279,13 +279,48 @@
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            margin-top: 10px;
             transition: all 0.2s;
+            font-family: 'Vazirmatn';
         }
         
         .btn-pay:hover {
             background: #059669;
             transform: translateY(-2px);
+        }
+        
+        .btn-pay:disabled {
+            background: #9CA3AF;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .payment-status {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 14px;
+        }
+        
+        .payment-status.success {
+            background: #D1FAE5;
+            color: #059669;
+        }
+        
+        .payment-status.error {
+            background: #FEE2E2;
+            color: #DC2626;
+        }
+        
+        .back-link {
+            display: block;
+            margin-top: 15px;
+            color: #2563EB;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        
+        .back-link:hover {
+            text-decoration: underline;
         }
         
         @media (max-width: 800px) {
@@ -383,56 +418,124 @@
         let amount = urlParams.get('amount');
         
         if (!bookingId) {
-            bookingId = Date.now();
+            showError('شناسه رزرو یافت نشد');
+            document.getElementById('paymentCard').innerHTML = `
+                <div style="text-align: center; padding: 20px; color: #EF4444;">
+                    <i class="fas fa-exclamation-circle" style="font-size: 40px; display: block; margin-bottom: 15px;"></i>
+                    شناسه رزرو یافت نشد
+                </div>
+            `;
+            throw new Error('شناسه رزرو یافت نشد');
         }
+        
         if (!amount) {
-            amount = 250000; 
+            amount = 0;
         }
         
         function loadPayment() {
             document.getElementById('paymentCard').innerHTML = `
                 <div class="payment-title">پرداخت رزرو</div>
-                <div class="amount">${parseInt(amount).toLocaleString()} تومان</div>
+                <div class="amount">${Number(amount).toLocaleString()} تومان</div>
                 <div class="card-details">
-                    <input type="text" id="cardNumber" placeholder="شماره کارت (16 رقمی)">
+                    <input type="text" id="cardNumber" placeholder="شماره کارت (16 رقمی)" maxlength="16" dir="ltr">
                     <div style="display: flex; gap: 10px;">
-                        <input type="text" id="expiryDate" placeholder="تاریخ انقضا (MM/YY)" style="flex:1;">
-                        <input type="text" id="cvv" placeholder="CVV2" style="flex:1;" maxlength="4">
+                        <input type="text" id="expiryDate" placeholder="تاریخ انقضا (MM/YY)" style="flex:1;" dir="ltr">
+                        <input type="text" id="cvv" placeholder="CVV2" style="flex:1;" maxlength="4" dir="ltr">
                     </div>
-                    <input type="text" id="cardHolder" placeholder="نام دارنده کارت">
+                    <input type="text" id="cardHolder" placeholder="نام دارنده کارت" dir="ltr">
                 </div>
                 <button class="btn-pay" id="payBtn">پرداخت</button>
+                <div id="paymentStatus"></div>
+                <a href="/customer-bookings/" class="back-link">← بازگشت به رزروهای من</a>
             `;
             
-            document.getElementById('payBtn').addEventListener('click', () => {
-                const cardNumber = document.getElementById('cardNumber').value.trim();
-                const expiryDate = document.getElementById('expiryDate').value.trim();
-                const cvv = document.getElementById('cvv').value.trim();
-                const cardHolder = document.getElementById('cardHolder').value.trim();
+            document.getElementById('payBtn').addEventListener('click', processPayment);
+            
+            document.getElementById('cardNumber').addEventListener('input', function(e) {
+                this.value = this.value.replace(/[^0-9]/g, '').slice(0, 16);
+            });
+            
+            document.getElementById('cvv').addEventListener('input', function(e) {
+                this.value = this.value.replace(/[^0-9]/g, '').slice(0, 4);
+            });
+        }
+        
+        async function processPayment() {
+            const payBtn = document.getElementById('payBtn');
+            const statusDiv = document.getElementById('paymentStatus');
+            
+            const cardNumber = document.getElementById('cardNumber').value.trim();
+            const expiryDate = document.getElementById('expiryDate').value.trim();
+            const cvv = document.getElementById('cvv').value.trim();
+            const cardHolder = document.getElementById('cardHolder').value.trim();
+            
+            if (!cardNumber || cardNumber.length < 16) {
+                showError('لطفاً شماره کارت معتبر (16 رقمی) وارد کنید');
+                return;
+            }
+            
+            if (!expiryDate || !expiryDate.match(/^(0[1-9]|1[0-2])\/([0-9]{2})$/)) {
+                showError('لطفاً تاریخ انقضا را به فرمت MM/YY وارد کنید');
+                return;
+            }
+            
+            if (!cvv || cvv.length < 3) {
+                showError('لطفاً CVV را وارد کنید (3 یا 4 رقم)');
+                return;
+            }
+            
+            if (!cardHolder || cardHolder.length < 2) {
+                showError('لطفاً نام دارنده کارت را وارد کنید');
+                return;
+            }
+            
+            payBtn.disabled = true;
+            payBtn.textContent = 'در حال پردازش...';
+            statusDiv.innerHTML = '';
+            
+            try {
+                console.log('📤 ارسال پرداخت:', {
+                    bookingId: bookingId,
+                    cardNumber: '****' + cardNumber.slice(-4),
+                    cardHolder: cardHolder
+                });
                 
-                if (!cardNumber || cardNumber.length < 16) {
-                    showError('لطفاً شماره کارت معتبر وارد کنید');
-                    return;
-                }
-                if (!expiryDate) {
-                    showError('لطفاً تاریخ انقضا را وارد کنید');
-                    return;
-                }
-                if (!cvv || cvv.length < 3) {
-                    showError('لطفاً CVV را وارد کنید');
-                    return;
-                }
-                if (!cardHolder) {
-                    showError('لطفاً نام دارنده کارت را وارد کنید');
-                    return;
-                }
+                const result = await CustomerAPI.createPayment(
+                    parseInt(bookingId),
+                    cardNumber,
+                    cardHolder
+                );
                 
-                showSuccess('پرداخت با موفقیت انجام شد! در حال انتقال به صفحه رزروهای من...');
+                console.log('📥 نتیجه پرداخت:', result);
+                
+                statusDiv.className = 'payment-status success';
+                statusDiv.innerHTML = `
+                    <i class="fas fa-check-circle"></i>
+                    پرداخت با موفقیت انجام شد!
+                    <br>
+                    <span style="font-size: 12px;">شماره تراکنش: ${result.payment?.transaction_id || 'NA'}</span>
+                `;
+                
+                showSuccess('پرداخت با موفقیت انجام شد! در حال انتقال...');
                 
                 setTimeout(() => {
                     window.location.href = '/customer-bookings/';
-                }, 2000);
-            });
+                }, 2500);
+                
+            } catch(err) {
+                console.error('❌ خطا در پرداخت:', err);
+                
+                statusDiv.className = 'payment-status error';
+                statusDiv.innerHTML = `
+                    <i class="fas fa-exclamation-circle"></i>
+                    ${err.message || 'خطا در انجام پرداخت'}
+                `;
+                
+                showError(err.message || 'خطا در انجام پرداخت');
+                
+                payBtn.disabled = false;
+                payBtn.textContent = 'پرداخت';
+            }
         }
         
         loadPayment();

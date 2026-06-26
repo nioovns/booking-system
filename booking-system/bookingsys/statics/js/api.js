@@ -542,15 +542,24 @@ const CustomerAPI = {
     },
 
     createPayment: async (bookingId, cardNumber, cardHolderName) => {
+        const token = getToken();
+        if (!token) {
+            throw new Error('لطفاً ابتدا وارد حساب کاربری خود شوید');
+        }
+    
         const response = await fetch(`${BASE_URL}/bookings/payments/create_payment/`, {
             method: 'POST',
-            headers: getHeaders(),
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
             body: JSON.stringify({
                 booking: bookingId,
                 card_number: cardNumber,
                 card_holder_name: cardHolderName
             })
         });
+    
         return handleResponse(response);
     },
 
