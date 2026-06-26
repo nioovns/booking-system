@@ -459,7 +459,6 @@
     
     <div class="menu-overlay" id="menuOverlay"></div>
     
-    <!-- منوی Provider - بدون داشبورد و نظرات -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <div class="menu-toggle-item" id="menuToggleBtn">
@@ -518,7 +517,10 @@
             <button class="modal-close" onclick="closeSlotModal()">×</button>
             <h3>افزودن زمان جدید</h3>
             <div class="form-row">
-                <input type="time" id="slotTime" placeholder="ساعت">
+                <input type="date" id="slotDate" class="form-input" style="flex:1;" placeholder="تاریخ">
+                <input type="time" id="slotTime" class="form-input" style="flex:1;" placeholder="ساعت">
+            </div>
+            <div class="form-row">
                 <select id="slotStatus">
                     <option value="available">آزاد</option>
                     <option value="booked">رزرو شده</option>
@@ -585,10 +587,13 @@
                 select.innerHTML = '<option value="">-- انتخاب کنید --</option>';
                 
                 servicesList.forEach(service => {
-                    select.innerHTML += `<option value="${service.id}">${service.name}</option>`;
+                    // استفاده از title یا name
+                    const serviceName = service.title || service.name || `سرویس ${service.id}`;
+                    select.innerHTML += `<option value="${service.id}">${serviceName}</option>`;
                 });
             } catch(err) {
                 showError('خطا در بارگذاری سرویس‌ها');
+                console.error(err);
             }
         }
         
@@ -600,21 +605,38 @@
             
             try {
                 const slots = await ProviderAPI.getTimeSlots(serviceId);
+                const tbody = document.getElementById('slotsTableBody');
+                
                 if (slots && slots.length > 0) {
-                    document.getElementById('slotsTableBody').innerHTML = slots.map(slot => `
-                        <tr>
-                            <td>${slot.time}</td>
-                            <td><span class="status-badge ${slot.available ? 'status-available' : 'status-booked'}">${slot.available ? 'آزاد' : 'رزرو شده'}</span></td>
-                            <td class="action-buttons">
-                                <button class="btn-delete" onclick="deleteSlot(${slot.id})" title="حذف"><i class="fas fa-trash"></i></button>
-                            </td>
-                        </tr>
-                    `).join('');
+                    tbody.innerHTML = slots.map(slot => {
+                        let timeDisplay = 'نامشخص';
+                        if (slot.start_time) {
+                            const date = new Date(slot.start_time);
+                            timeDisplay = date.toLocaleDateString('fa-IR') + ' ' + date.toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' });
+                        } else if (slot.start_time_str) {
+                            timeDisplay = slot.start_time_str;
+                        }
+                        
+                        const isAvailable = slot.is_active !== undefined ? slot.is_active : !slot.is_booked;
+                        const statusText = isAvailable ? 'آزاد' : 'رزرو شده';
+                        const statusClass = isAvailable ? 'status-available' : 'status-booked';
+                        
+                        return `
+                            <tr>
+                                <td>${timeDisplay}</td>
+                                <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                                <td class="action-buttons">
+                                    <button class="btn-delete" onclick="deleteSlot(${slot.id})" title="حذف"><i class="fas fa-trash"></i></button>
+                                </td>
+                            </tr>
+                        `;
+                    }).join('');
                 } else {
-                    document.getElementById('slotsTableBody').innerHTML = '<tr><td colspan="3" style="text-align: center;">هیچ زمانی تعریف نشده است</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="3" style="text-align: center;">هیچ زمانی تعریف نشده است</td></tr>';
                 }
             } catch(err) {
                 showError('خطا در بارگذاری زمان‌بندی');
+                console.error(err);
             }
         }
         
@@ -632,6 +654,7 @@
                 showError('لطفاً ابتدا یک سرویس انتخاب کنید');
                 return;
             }
+            document.getElementById('slotDate').value = '';
             document.getElementById('slotTime').value = '';
             document.getElementById('slotStatus').value = 'available';
             document.getElementById('slotModal').classList.add('active');
@@ -642,21 +665,46 @@
         });
         
         document.getElementById('saveSlotBtn').addEventListener('click', async () => {
+            const date = document.getElementById('slotDate').value;
             const time = document.getElementById('slotTime').value;
             const available = document.getElementById('slotStatus').value === 'available';
             
-            if (!time) {
-                showError('لطفاً ساعت را وارد کنید');
+            if (!date || !time) {
+                showError('لطفاً تاریخ و ساعت را وارد کنید');
                 return;
             }
             
             try {
-                await ProviderAPI.addTimeSlot(currentServiceId, { time, available });
+                const startDateTime = `${date}T${time}:00`;
+                const startDate = new Date(startDateTime);
+                
+                const endDate = new Date(startDate.getTime() + 60 * 60000);
+                
+                const formatDateTime = (dateObj) => {
+                    const year = dateObj.getFullYear();
+                    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+                    const day = String(dateObj.getDate()).padStart(2, '0');
+                    const hours = String(dateObj.getHours()).padStart(2, '0');
+                    const minutes = String(dateObj.getMinutes()).padStart(2, '0');
+                    const seconds = String(dateObj.getSeconds()).padStart(2, '0');
+                    return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+                };
+                
+                const slotData = {
+                    start_time: formatDateTime(startDate),
+                    end_time: formatDateTime(endDate),
+                    is_active: available
+                };
+                
+                console.log('📤 ارسال زمان:', slotData);
+                
+                await ProviderAPI.addTimeSlot(currentServiceId, slotData);
                 showSuccess('زمان با موفقیت اضافه شد');
                 document.getElementById('slotModal').classList.remove('active');
                 loadTimeSlots(currentServiceId);
             } catch(err) {
-                showError(err.message);
+                console.error('❌ خطا:', err);
+                showError(err.message || 'خطا در افزودن زمان');
             }
         });
         
