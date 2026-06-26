@@ -6,17 +6,28 @@ from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import mm
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
-from reportlab.pdfgen import canvas
-from reportlab.lib.enums import TA_CENTER, TA_RIGHT, TA_LEFT
+from reportlab.lib.enums import TA_CENTER, TA_RIGHT
 from io import BytesIO
 
 from .models import Booking
 from services.models import Service
 from users.models import User
 
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+
+import arabic_reshaper
+from bidi.algorithm import get_display
+
+pdfmetrics.registerFont(TTFont('Vazir', 'fonts/Vazir.ttf'))
+
+def fa(text):
+    if text is None:
+        return ""
+    return get_display(arabic_reshaper.reshape(str(text)))
+
 
 def create_pdf_response(pdf_content, filename):
-    """Create HTTP response for PDF"""
     from django.http import HttpResponse
     response = HttpResponse(pdf_content, content_type='application/pdf')
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
@@ -24,68 +35,84 @@ def create_pdf_response(pdf_content, filename):
 
 
 def generate_customer_bookings_pdf(user, bookings):
-    """PDF report of a customer's bookings"""
-    
     buffer = BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=20*mm, leftMargin=20*mm, topMargin=20*mm, bottomMargin=20*mm)
+    doc = SimpleDocTemplate(buffer, pagesize=A4,
+                            rightMargin=20*mm, leftMargin=20*mm,
+                            topMargin=20*mm, bottomMargin=20*mm)
+
     styles = getSampleStyleSheet()
     story = []
-    
-    # Title
+
     title_style = ParagraphStyle(
-        'CustomTitle',
+        'title',
         parent=styles['Heading1'],
-        fontSize=20,
-        textColor=colors.HexColor('#0C1844'),
+        fontName='Vazir',
+        fontSize=18,
         alignment=TA_CENTER,
-        spaceAfter=20
+        textColor=colors.HexColor('#0C1844'),
+        spaceAfter=15
     )
-    story.append(Paragraph("Customer Bookings Report", title_style))
-    
-    # Date
-    date_style = ParagraphStyle('Date', parent=styles['Normal'], alignment=TA_CENTER, fontSize=12, textColor=colors.grey)
-    story.append(Paragraph(f"Date: {timezone.now().strftime('%Y/%m/%d %H:%M')}", date_style))
+
+    story.append(Paragraph(fa("گزارش رزروهای مشتری"), title_style))
+
+    date_style = ParagraphStyle(
+        'date',
+        parent=styles['Normal'],
+        fontName='Vazir',
+        alignment=TA_CENTER,
+        textColor=colors.grey
+    )
+
+    story.append(Paragraph(fa(timezone.now().strftime('%Y/%m/%d %H:%M')), date_style))
     story.append(Spacer(1, 10*mm))
-    
-    # Customer info
-    info_style = styles['Normal']
-    story.append(Paragraph(f"<b>Customer Name:</b> {user.get_full_name() or user.username}", info_style))
-    story.append(Paragraph(f"<b>Email:</b> {user.email}", info_style))
-    story.append(Paragraph(f"<b>Total Bookings:</b> {bookings.count()}", info_style))
-    total_spent = bookings.filter(payment_status=Booking.PaymentStatus.PAID).aggregate(total=Sum('price_at_booking'))['total'] or 0
-    story.append(Paragraph(f"<b>Total Spent:</b> {total_spent:,.0f} Toman", info_style))
-    story.append(Spacer(1, 10*mm))
-    
-    # Bookings table
-    data = [['#', 'Service', 'Date', 'Price', 'Status', 'Payment']]
-    for idx, booking in enumerate(bookings, 1):
+
+    info_style = ParagraphStyle(
+        'info',
+        parent=styles['Normal'],
+        fontName='Vazir'
+    )
+
+    story.append(Paragraph(fa(f"نام مشتری: {user.get_full_name() or user.username}"), info_style))
+    story.append(Paragraph(fa(f"ایمیل: {user.email}"), info_style))
+    story.append(Paragraph(fa(f"تعداد رزروها: {bookings.count()}"), info_style))
+
+    total_spent = bookings.filter(
+        payment_status=Booking.PaymentStatus.PAID
+    ).aggregate(total=Sum('price_at_booking'))['total'] or 0
+
+    story.append(Paragraph(fa(f"جمع پرداختی: {total_spent:,.0f} تومان"), info_style))
+    story.append(Spacer(1, 8*mm))
+
+    # TABLE
+    data = [[fa('#'), fa('سرویس'), fa('تاریخ'), fa('قیمت'), fa('وضعیت'), fa('پرداخت')]]
+
+    for idx, b in enumerate(bookings, 1):
         data.append([
             str(idx),
-            booking.service.title,
-            booking.time_slot.start_time.strftime('%Y/%m/%d %H:%M'),
-            f"{booking.price_at_booking:,.0f}",
-            booking.get_status_display(),
-            booking.get_payment_status_display()
+            fa(b.service.title),
+            fa(b.time_slot.start_time.strftime('%Y/%m/%d %H:%M')),
+            f"{b.price_at_booking:,.0f}",
+            fa(b.get_status_display()),
+            fa(b.get_payment_status_display())
         ])
-    
-    table = Table(data, colWidths=[20*mm, 50*mm, 45*mm, 30*mm, 30*mm, 30*mm])
+
+    table = Table(data, repeatRows=1)
+
     table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#0C1844')),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('FONTNAME', (0, 0), (-1, -1), 'Vazir'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
         ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, 0), 12),
-        ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
-        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#0C1844')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.whitesmoke),
     ]))
+
     story.append(table)
-    
-    # Footer
-    story.append(Spacer(1, 20*mm))
-    footer_style = ParagraphStyle('Footer', parent=styles['Normal'], alignment=TA_CENTER, fontSize=10, textColor=colors.grey)
-    story.append(Paragraph("This report is generated by the Service Management System.", footer_style))
-    
+
+    story.append(Spacer(1, 15*mm))
+    story.append(Paragraph(fa("این گزارش توسط سیستم تولید شده است"), info_style))
+
     doc.build(story)
     pdf = buffer.getvalue()
     buffer.close()
@@ -93,55 +120,47 @@ def generate_customer_bookings_pdf(user, bookings):
 
 
 def generate_provider_bookings_pdf(user, bookings):
-    """PDF report of a provider's bookings"""
-    
     buffer = BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=20*mm, leftMargin=20*mm, topMargin=20*mm, bottomMargin=20*mm)
+    doc = SimpleDocTemplate(buffer, pagesize=A4)
+
     styles = getSampleStyleSheet()
     story = []
-    
-    title_style = ParagraphStyle('CustomTitle', parent=styles['Heading1'], fontSize=20, textColor=colors.HexColor('#0C1844'), alignment=TA_CENTER, spaceAfter=20)
-    story.append(Paragraph("Provider Bookings Report", title_style))
-    
-    date_style = ParagraphStyle('Date', parent=styles['Normal'], alignment=TA_CENTER, fontSize=12, textColor=colors.grey)
-    story.append(Paragraph(f"Date: {timezone.now().strftime('%Y/%m/%d %H:%M')}", date_style))
+
+    title_style = ParagraphStyle(
+        'title',
+        parent=styles['Heading1'],
+        fontName='Vazir',
+        fontSize=18,
+        alignment=TA_CENTER
+    )
+
+    story.append(Paragraph(fa("گزارش رزروهای ارائه‌دهنده"), title_style))
     story.append(Spacer(1, 10*mm))
-    
-    info_style = styles['Normal']
-    story.append(Paragraph(f"<b>Provider Name:</b> {user.get_full_name() or user.username}", info_style))
-    story.append(Paragraph(f"<b>Email:</b> {user.email}", info_style))
-    story.append(Paragraph(f"<b>Total Bookings:</b> {bookings.count()}", info_style))
-    total_income = bookings.filter(payment_status=Booking.PaymentStatus.PAID).aggregate(total=Sum('price_at_booking'))['total'] or 0
-    story.append(Paragraph(f"<b>Total Income:</b> {total_income:,.0f} Toman", info_style))
-    story.append(Spacer(1, 10*mm))
-    
-    data = [['#', 'Service', 'Customer', 'Date', 'Price', 'Status', 'Payment']]
-    for idx, booking in enumerate(bookings, 1):
+
+    data = [[fa('#'), fa('سرویس'), fa('مشتری'), fa('تاریخ'), fa('قیمت'), fa('وضعیت')]]
+
+    for i, b in enumerate(bookings, 1):
         data.append([
-            str(idx),
-            booking.service.title,
-            booking.customer.get_full_name() or booking.customer.username,
-            booking.time_slot.start_time.strftime('%Y/%m/%d %H:%M'),
-            f"{booking.price_at_booking:,.0f}",
-            booking.get_status_display(),
-            booking.get_payment_status_display()
+            str(i),
+            fa(b.service.title),
+            fa(b.customer.get_full_name() or b.customer.username),
+            fa(b.time_slot.start_time.strftime('%Y/%m/%d %H:%M')),
+            f"{b.price_at_booking:,.0f}",
+            fa(b.get_status_display())
         ])
-    
-    table = Table(data, colWidths=[18*mm, 40*mm, 35*mm, 38*mm, 25*mm, 25*mm, 25*mm])
+
+    table = Table(data, repeatRows=1)
+
     table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#0C1844')),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('FONTNAME', (0, 0), (-1, -1), 'Vazir'),
         ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, 0), 11),
-        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#0C1844')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
     ]))
+
     story.append(table)
-    
-    story.append(Spacer(1, 20*mm))
-    footer_style = ParagraphStyle('Footer', parent=styles['Normal'], alignment=TA_CENTER, fontSize=10, textColor=colors.grey)
-    story.append(Paragraph("This report is generated by the Service Management System.", footer_style))
-    
+
     doc.build(story)
     pdf = buffer.getvalue()
     buffer.close()
@@ -149,104 +168,26 @@ def generate_provider_bookings_pdf(user, bookings):
 
 
 def generate_admin_stats_pdf():
-    """PDF statistical report for admin"""
-    
     buffer = BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=20*mm, leftMargin=20*mm, topMargin=20*mm, bottomMargin=20*mm)
+    doc = SimpleDocTemplate(buffer, pagesize=A4)
+
     styles = getSampleStyleSheet()
     story = []
-    
-    title_style = ParagraphStyle('CustomTitle', parent=styles['Heading1'], fontSize=20, textColor=colors.HexColor('#0C1844'), alignment=TA_CENTER, spaceAfter=20)
-    story.append(Paragraph("System Statistics Report", title_style))
-    
-    date_style = ParagraphStyle('Date', parent=styles['Normal'], alignment=TA_CENTER, fontSize=12, textColor=colors.grey)
-    story.append(Paragraph(f"Date: {timezone.now().strftime('%Y/%m/%d %H:%M')}", date_style))
+
+    title_style = ParagraphStyle(
+        'title',
+        fontName='Vazir',
+        fontSize=18,
+        alignment=TA_CENTER
+    )
+
+    story.append(Paragraph(fa("گزارش آماری سیستم"), title_style))
     story.append(Spacer(1, 10*mm))
-    
-    # User Statistics
-    story.append(Paragraph("<b>📊 User Statistics</b>", styles['Heading2']))
-    total_users = User.objects.count()
-    admin_count = User.objects.filter(role=User.Roles.ADMIN).count()
-    provider_count = User.objects.filter(role=User.Roles.SERVICE_PROVIDER).count()
-    customer_count = User.objects.filter(role=User.Roles.CUSTOMER).count()
-    
-    user_data = [['User Type', 'Count']]
-    user_data.append(['Total Users', str(total_users)])
-    user_data.append(['Admins', str(admin_count)])
-    user_data.append(['Providers', str(provider_count)])
-    user_data.append(['Customers', str(customer_count)])
-    
-    user_table = Table(user_data, colWidths=[70*mm, 50*mm])
-    user_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#0C1844')),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('GRID', (0, 0), (-1, -1), 1, colors.black),
-    ]))
-    story.append(user_table)
-    story.append(Spacer(1, 8*mm))
-    
-    # Service Statistics
-    story.append(Paragraph("<b>📦 Service Statistics</b>", styles['Heading2']))
-    total_services = Service.objects.count()
-    active_services = Service.objects.filter(is_active=True).count()
-    inactive_services = Service.objects.filter(is_active=False).count()
-    
-    service_data = [['Service Type', 'Count']]
-    service_data.append(['Total Services', str(total_services)])
-    service_data.append(['Active', str(active_services)])
-    service_data.append(['Inactive', str(inactive_services)])
-    
-    service_table = Table(service_data, colWidths=[70*mm, 50*mm])
-    service_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#0C1844')),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('GRID', (0, 0), (-1, -1), 1, colors.black),
-    ]))
-    story.append(service_table)
-    story.append(Spacer(1, 8*mm))
-    
-    # Booking Statistics
-    story.append(Paragraph("<b>📋 Booking Statistics</b>", styles['Heading2']))
-    total_bookings = Booking.objects.count()
-    pending_bookings = Booking.objects.filter(status=Booking.Status.PENDING).count()
-    confirmed_bookings = Booking.objects.filter(status=Booking.Status.CONFIRMED).count()
-    completed_bookings = Booking.objects.filter(status=Booking.Status.COMPLETED).count()
-    canceled_bookings = Booking.objects.filter(status=Booking.Status.CANCELED).count()
-    rejected_bookings = Booking.objects.filter(status=Booking.Status.REJECTED).count()
-    
-    booking_data = [['Status', 'Count']]
-    booking_data.append(['Total Bookings', str(total_bookings)])
-    booking_data.append(['Pending', str(pending_bookings)])
-    booking_data.append(['Confirmed', str(confirmed_bookings)])
-    booking_data.append(['Completed', str(completed_bookings)])
-    booking_data.append(['Canceled', str(canceled_bookings)])
-    booking_data.append(['Rejected', str(rejected_bookings)])
-    
-    booking_table = Table(booking_data, colWidths=[70*mm, 50*mm])
-    booking_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#0C1844')),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('GRID', (0, 0), (-1, -1), 1, colors.black),
-    ]))
-    story.append(booking_table)
-    story.append(Spacer(1, 8*mm))
-    
-    # Income
-    story.append(Paragraph("<b>💰 Income</b>", styles['Heading2']))
-    total_income = Booking.objects.filter(payment_status=Booking.PaymentStatus.PAID).aggregate(total=Sum('price_at_booking'))['total'] or 0
-    income_style = styles['Normal']
-    story.append(Paragraph(f"<b>Total Income:</b> {total_income:,.0f} Toman", income_style))
-    
-    story.append(Spacer(1, 20*mm))
-    footer_style = ParagraphStyle('Footer', parent=styles['Normal'], alignment=TA_CENTER, fontSize=10, textColor=colors.grey)
-    story.append(Paragraph("This report is generated by the Service Management System.", footer_style))
-    
+
+    story.append(Paragraph(fa(f"کل کاربران: {User.objects.count()}"), styles['Normal']))
+    story.append(Paragraph(fa(f"کل سرویس‌ها: {Service.objects.count()}"), styles['Normal']))
+    story.append(Paragraph(fa(f"کل رزروها: {Booking.objects.count()}"), styles['Normal']))
+
     doc.build(story)
     pdf = buffer.getvalue()
     buffer.close()
@@ -254,73 +195,37 @@ def generate_admin_stats_pdf():
 
 
 def generate_invoice_pdf(booking):
-    """Payment invoice PDF for a booking"""
-    
     buffer = BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=20*mm, leftMargin=20*mm, topMargin=20*mm, bottomMargin=20*mm)
+    doc = SimpleDocTemplate(buffer, pagesize=A4)
+
     styles = getSampleStyleSheet()
     story = []
-    
-    # Header
-    title_style = ParagraphStyle('CustomTitle', parent=styles['Heading1'], fontSize=24, textColor=colors.HexColor('#0C1844'), alignment=TA_CENTER, spaceAfter=10)
-    story.append(Paragraph("Payment Invoice", title_style))
-    
-    subtitle_style = ParagraphStyle('Subtitle', parent=styles['Normal'], alignment=TA_CENTER, fontSize=14, textColor=colors.grey)
-    story.append(Paragraph("Payment Receipt", subtitle_style))
-    story.append(Paragraph(f"Invoice Number: INV-{booking.id}-{booking.booking_date.year}", subtitle_style))
-    story.append(Paragraph(f"Date: {timezone.now().strftime('%Y/%m/%d %H:%M')}", subtitle_style))
+
+    title = ParagraphStyle(
+        'title',
+        fontName='Vazir',
+        fontSize=20,
+        alignment=TA_CENTER
+    )
+    story.append(Paragraph(fa("فاکتور پرداخت"), title))
     story.append(Spacer(1, 10*mm))
-    
-    # Information
-    info_data = [
-        ['Customer Name:', booking.customer.get_full_name() or booking.customer.username],
-        ['Customer Email:', booking.customer.email],
-        ['Provider:', booking.provider.get_full_name() or booking.provider.username],
-        ['Service:', booking.service.title],
-        ['Service Date:', booking.time_slot.start_time.strftime('%Y/%m/%d %H:%M')],
-        ['Booking Status:', booking.get_status_display()],
-        ['Payment Status:', booking.get_payment_status_display()],
+
+    info = [
+        [fa("مشتری"), fa(booking.customer.get_full_name() or booking.customer.username)],
+        [fa("سرویس"), fa(booking.service.title)],
+        [fa("تاریخ"), fa(booking.time_slot.start_time.strftime('%Y/%m/%d %H:%M'))],
+        [fa("مبلغ"), f"{booking.price_at_booking:,.0f}"]
     ]
-    
-    info_table = Table(info_data, colWidths=[50*mm, 80*mm])
-    info_table.setStyle(TableStyle([
-        ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, -1), 12),
-        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-        ('TOPPADDING', (0, 0), (-1, -1), 6),
+
+    table = Table(info)
+
+    table.setStyle(TableStyle([
+        ('FONTNAME', (0, 0), (-1, -1), 'Vazir'),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
     ]))
-    story.append(info_table)
-    story.append(Spacer(1, 10*mm))
-    
-    # Amount Table
-    invoice_data = [
-        ['Description', 'Amount (Toman)'],
-        [f"Service: {booking.service.title}", f"{booking.price_at_booking:,.0f}"],
-        ['Total', f"{booking.price_at_booking:,.0f}"]
-    ]
-    
-    invoice_table = Table(invoice_data, colWidths=[80*mm, 50*mm])
-    invoice_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#0C1844')),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-        ('ALIGN', (1, 0), (1, -1), 'RIGHT'),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, 0), 12),
-        ('BACKGROUND', (0, 2), (1, 2), colors.lightgrey),
-        ('FONTNAME', (0, 2), (1, 2), 'Helvetica-Bold'),
-        ('GRID', (0, 0), (-1, -1), 1, colors.black),
-    ]))
-    story.append(invoice_table)
-    
-    # Total Amount
-    story.append(Spacer(1, 10*mm))
-    total_style = ParagraphStyle('Total', parent=styles['Normal'], fontSize=16, textColor=colors.HexColor('#28a745'), alignment=TA_RIGHT)
-    story.append(Paragraph(f"Total Amount: {booking.price_at_booking:,.0f} Toman", total_style))
-    
-    story.append(Spacer(1, 20*mm))
-    footer_style = ParagraphStyle('Footer', parent=styles['Normal'], alignment=TA_CENTER, fontSize=10, textColor=colors.grey)
-    story.append(Paragraph("This invoice is issued by the Service Management System.", footer_style))
-    
+
+    story.append(table)
+
     doc.build(story)
     pdf = buffer.getvalue()
     buffer.close()
