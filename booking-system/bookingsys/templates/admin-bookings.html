@@ -12,7 +12,6 @@
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     
     <style>
-        
         .menu-overlay {
             position: fixed;
             top: 0;
@@ -310,12 +309,17 @@
             color: #6B7280;
         }
         
+        .status-completed {
+            background: #DBEAFE;
+            color: #2563EB;
+        }
+        
         .action-buttons {
             display: flex;
             gap: 8px;
         }
         
-        .btn-approve, .btn-cancel {
+        .btn-approve, .btn-cancel-force {
             background: none;
             border: none;
             cursor: pointer;
@@ -333,12 +337,18 @@
             background: #D1FAE5;
         }
         
-        .btn-cancel {
+        .btn-cancel-force {
             color: #DC2626;
         }
         
-        .btn-cancel:hover {
+        .btn-cancel-force:hover {
             background: #FEE2E2;
+        }
+        
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #6B7280;
         }
         
         .modal {
@@ -446,8 +456,12 @@
             <h1 class="page-title">مدیریت رزروها</h1>
             <div class="user-info">
                 <span class="user-name" id="username">ادمین</span>
-                <button class="btn-icon" id="changePasswordBtn" title="تغییر رمز"><i class="fas fa-key"></i></button>
-                <button class="btn-icon" id="logoutBtn" title="خروج"><i class="fas fa-sign-out-alt"></i></button>
+                <button class="btn-icon" id="changePasswordBtn" title="تغییر رمز">
+                    <i class="fas fa-key"></i>
+                </button>
+                <button class="btn-icon" id="logoutBtn" title="خروج">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
             </div>
         </div>
         
@@ -461,6 +475,7 @@
                         <option value="confirmed">تایید شده</option>
                         <option value="rejected">رد شده</option>
                         <option value="canceled">لغو شده</option>
+                        <option value="completed">انجام شده</option>
                     </select>
                 </div>
             </div>
@@ -471,12 +486,15 @@
                         <th>ارائه‌دهنده</th>
                         <th>سرویس</th>
                         <th>تاریخ</th>
+                        <th>ساعت</th>
+                        <th>قیمت</th>
                         <th>وضعیت</th>
+                        <th>پرداخت</th>
                         <th>عملیات</th>
                     </tr>
                 </thead>
                 <tbody id="bookingsTableBody">
-                    <tr><td colspan="6" style="text-align: center;">در حال بارگذاری...</td></tr>
+                    <tr><td colspan="9" style="text-align: center;">در حال بارگذاری...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -497,6 +515,35 @@
     
     <script src="{% static 'js/api.js' %}"></script>
     <script>
+        function toPersianDate(dateString) {
+            if (!dateString) return 'نامشخص';
+            try {
+                const date = new Date(dateString);
+                if (isNaN(date.getTime())) return 'نامشخص';
+                return date.toLocaleDateString('fa-IR', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit'
+                });
+            } catch(e) {
+                return 'نامشخص';
+            }
+        }
+        
+        function toPersianTime(dateString) {
+            if (!dateString) return 'نامشخص';
+            try {
+                const date = new Date(dateString);
+                if (isNaN(date.getTime())) return 'نامشخص';
+                return date.toLocaleTimeString('fa-IR', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            } catch(e) {
+                return 'نامشخص';
+            }
+        }
+        
         const sidebar = document.getElementById('sidebar');
         const menuOverlay = document.getElementById('menuOverlay');
         const menuToggleBtn = document.getElementById('menuToggleBtn');
@@ -513,46 +560,140 @@
             }
         }
         
-        menuToggleBtn.addEventListener('click', toggleMenu);
-        menuOverlay.addEventListener('click', toggleMenu);
+        if (menuToggleBtn) menuToggleBtn.addEventListener('click', toggleMenu);
+        if (menuOverlay) menuOverlay.addEventListener('click', toggleMenu);
+        
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', () => {
+                AuthAPI.logout();
+            });
+        }
+        
+        const usernameSpan = document.getElementById('username');
+        if (usernameSpan) {
+            usernameSpan.innerText = localStorage.getItem('username') || 'ادمین';
+        }
         
         const statusMap = {
             'pending': 'در انتظار',
             'confirmed': 'تایید شده',
             'rejected': 'رد شده',
-            'canceled': 'لغو شده'
+            'canceled': 'لغو شده',
+            'completed': 'انجام شده'
+        };
+        
+        const statusClass = {
+            'pending': 'status-pending',
+            'confirmed': 'status-confirmed',
+            'rejected': 'status-rejected',
+            'canceled': 'status-canceled',
+            'completed': 'status-completed'
         };
         
         async function loadBookings() {
+            const tbody = document.getElementById('bookingsTableBody');
+            
             try {
                 const bookings = await AdminAPI.getBookings();
+                console.log('📥 رزروهای دریافتی (Admin):', bookings);
+                
+                let bookingsList = bookings;
+                if (bookings.results) {
+                    bookingsList = bookings.results;
+                } else if (!Array.isArray(bookings)) {
+                    bookingsList = [];
+                }
+                
                 const filter = document.getElementById('statusFilter').value;
                 
-                let filteredBookings = bookings;
+                let filteredBookings = bookingsList;
                 if (filter !== 'all') {
-                    filteredBookings = bookings.filter(b => b.status === filter);
+                    filteredBookings = bookingsList.filter(b => b.status === filter);
                 }
                 
                 if (filteredBookings && filteredBookings.length > 0) {
-                    document.getElementById('bookingsTableBody').innerHTML = filteredBookings.map(booking => `
-                        <tr>
-                            <td>${booking.customerName}</td>
-                            <td>${booking.providerName}</td>
-                            <td>${booking.serviceName}</td>
-                            <td>${booking.date}</td>
-                            <td><span class="status-badge status-${booking.status}">${statusMap[booking.status] | booking.status}</span></td>
-                            <td class="action-buttons">
-                                <button class="btn-approve" onclick="forceApprove(${booking.id})" title="تایید اجباری"><i class="fas fa-check-circle"></i></button>
-                                <button class="btn-cancel" onclick="forceCancel(${booking.id})" title="لغو اجباری"><i class="fas fa-times-circle"></i></button>
-                            </td>
-                        </tr>
-                    `).join('');
+                    tbody.innerHTML = filteredBookings.map(booking => {
+                        console.log('📋 رزرو (Admin):', booking);
+                        
+                        const customerName = booking.customer_name || booking.customerName || 'نامشخص';
+                        const providerName = booking.provider_name || booking.providerName || 'نامشخص';
+                        const serviceTitle = booking.service_title || booking.serviceName || 'بدون نام';
+                        const price = booking.price_at_booking || booking.price || 0;
+                        const status = booking.status || 'pending';
+                        const statusText = statusMap[status] || status;
+                        const statusCls = statusClass[status] || 'status-pending';
+                        const paymentStatus = booking.payment_status || 'unpaid';
+                        const isPaid = paymentStatus === 'paid';
+                        
+                        let dateDisplay = 'نامشخص';
+                        let timeDisplay = 'نامشخص';
+                        
+                        if (booking.time_slot_start) {
+                            dateDisplay = toPersianDate(booking.time_slot_start);
+                            timeDisplay = toPersianTime(booking.time_slot_start);
+                        } else if (booking.start_time) {
+                            dateDisplay = toPersianDate(booking.start_time);
+                            timeDisplay = toPersianTime(booking.start_time);
+                        } else if (booking.date) {
+                            dateDisplay = toPersianDate(booking.date);
+                            timeDisplay = toPersianTime(booking.date);
+                        }
+                        
+                        const isPending = status === 'pending';
+                        const isCanceled = status === 'canceled';
+                        
+                        return `
+                            <tr>
+                                <td>${customerName}</td>
+                                <td>${providerName}</td>
+                                <td>${serviceTitle}</td>
+                                <td>${dateDisplay}</td>
+                                <td>${timeDisplay}</td>
+                                <td>${Number(price).toLocaleString()} تومان</td>
+                                <td><span class="status-badge ${statusCls}">${statusText}</span></td>
+                                <td>
+                                    <span class="status-badge ${isPaid ? 'status-confirmed' : 'status-pending'}">
+                                        ${isPaid ? 'پرداخت شده' : 'پرداخت نشده'}
+                                    </span>
+                                </td>
+                                <td class="action-buttons">
+                                    ${isPending ? `
+                                        <button class="btn-approve" onclick="forceApprove(${booking.id})" title="تایید اجباری">
+                                            <i class="fas fa-check-circle"></i>
+                                        </button>
+                                        <button class="btn-cancel-force" onclick="forceCancel(${booking.id})" title="لغو اجباری">
+                                            <i class="fas fa-times-circle"></i>
+                                        </button>
+                                    ` : `
+                                        ${!isCanceled ? `
+                                            <button class="btn-cancel-force" onclick="forceCancel(${booking.id})" title="لغو اجباری">
+                                                <i class="fas fa-times-circle"></i>
+                                            </button>
+                                        ` : `
+                                            <span style="color: #9CA3AF; font-size: 12px;">غیرقابل تغییر</span>
+                                        `}
+                                    `}
+                                </td>
+                            </tr>
+                        `;
+                    }).join('');
                 } else {
-                    document.getElementById('bookingsTableBody').innerHTML = '<tr><td colspan="6" style="text-align: center;">هیچ رزروی یافت نشد</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="9" style="text-align: center;">هیچ رزروی یافت نشد</td></tr>';
                 }
             } catch(err) {
+                console.error('❌ خطا:', err);
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="9" style="text-align: center; color: #EF4444;">
+                            <i class="fas fa-exclamation-circle"></i>
+                            خطا در بارگذاری رزروها
+                            <br>
+                            <span style="font-size: 12px; color: #9CA3AF;">${err.message}</span>
+                        </td>
+                    </tr>
+                `;
                 showError('خطا در بارگذاری رزروها');
-                console.error(err);
             }
         }
         
@@ -561,9 +702,9 @@
                 try {
                     await AdminAPI.forceApprove(id);
                     showSuccess('رزرو با موفقیت تایید شد');
-                    loadBookings();
+                    await loadBookings();
                 } catch(err) {
-                    showError(err.message);
+                    showError(err.message || 'خطا در تایید رزرو');
                 }
             }
         };
@@ -573,9 +714,9 @@
                 try {
                     await AdminAPI.forceCancel(id);
                     showSuccess('رزرو با موفقیت لغو شد');
-                    loadBookings();
+                    await loadBookings();
                 } catch(err) {
-                    showError(err.message);
+                    showError(err.message || 'خطا در لغو رزرو');
                 }
             }
         };
@@ -583,9 +724,6 @@
         document.getElementById('statusFilter').addEventListener('change', () => {
             loadBookings();
         });
-        
-        document.getElementById('username').innerText = localStorage.getItem('username') || 'ادمین';
-        document.getElementById('logoutBtn').addEventListener('click', () => { AuthAPI.logout(); });
         
         const pwdModal = document.getElementById('changePasswordModal');
         document.getElementById('changePasswordBtn').addEventListener('click', () => pwdModal.classList.add('active'));
@@ -595,6 +733,16 @@
             const oldPass = document.getElementById('oldPassword').value;
             const newPass = document.getElementById('newPassword').value;
             const confirmPass = document.getElementById('confirmPassword').value;
+            
+            if (newPass !== confirmPass) {
+                showError('رمز جدید و تکرار آن مطابقت ندارند');
+                return;
+            }
+            if (newPass.length < 6) {
+                showError('رمز عبور باید حداقل ۶ کاراکتر باشد');
+                return;
+            }
+            
             try {
                 await AuthAPI.changePassword(oldPass, newPass, confirmPass);
                 showSuccess('رمز با موفقیت تغییر کرد');
@@ -602,7 +750,9 @@
                 document.getElementById('oldPassword').value = '';
                 document.getElementById('newPassword').value = '';
                 document.getElementById('confirmPassword').value = '';
-            } catch(err) { showError(err.message); }
+            } catch(err) {
+                showError(err.message);
+            }
         });
         
         loadBookings();
