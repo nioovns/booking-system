@@ -487,14 +487,28 @@ const CustomerAPI = {
     },
 
     createBooking: async (bookingData) => {
+        const token = getToken();
+        if (!token) {
+            throw new Error('لطفاً ابتدا وارد حساب کاربری خود شوید');
+        }
+        
         const response = await fetch(`${BASE_URL}/bookings/bookings/`, {
             method: 'POST',
-            headers: getHeaders(),
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
             body: JSON.stringify({
                 time_slot: bookingData.slotId,
                 customer_note: bookingData.note || ''
             })
         });
+        
+        // ===== بررسی خطای 403 =====
+        if (response.status === 403) {
+            throw new Error('شما اجازه انجام این دستور را ندارید. لطفاً دوباره وارد شوید.');
+        }
+        
         return handleResponse(response);
     },
 

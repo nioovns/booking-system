@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     
     <style>
+        /* ===== استایل‌ها (همان قبلی) ===== */
         .menu-overlay {
             position: fixed;
             top: 0;
@@ -25,11 +26,7 @@
             visibility: hidden;
             transition: all 0.3s ease;
         }
-        
-        .menu-overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
+        .menu-overlay.active { opacity: 1; visibility: visible; }
         
         .sidebar {
             position: fixed;
@@ -45,10 +42,7 @@
             box-shadow: -8px 0 30px rgba(0, 0, 0, 0.2);
             overflow: hidden;
         }
-        
-        .sidebar.open {
-            width: 240px;
-        }
+        .sidebar.open { width: 240px; }
         
         .sidebar-header {
             padding: 24px 0 16px;
@@ -69,44 +63,14 @@
             cursor: pointer;
             transition: all 0.25s ease;
         }
+        .menu-toggle-item i { font-size: 22px; width: 28px; text-align: center; }
+        .menu-toggle-item .menu-text { font-size: 13px; font-weight: 500; display: none; letter-spacing: 0.3px; }
+        .sidebar.open .menu-toggle-item { justify-content: flex-start; padding: 10px 16px; margin: 0 12px; }
+        .sidebar.open .menu-toggle-item .menu-text { display: inline; }
+        .menu-toggle-item:hover { background: rgba(255, 255, 255, 0.08); color: white; }
         
-        .menu-toggle-item i {
-            font-size: 22px;
-            width: 28px;
-            text-align: center;
-        }
-        
-        .menu-toggle-item .menu-text {
-            font-size: 13px;
-            font-weight: 500;
-            display: none;
-            letter-spacing: 0.3px;
-        }
-        
-        .sidebar.open .menu-toggle-item {
-            justify-content: flex-start;
-            padding: 10px 16px;
-            margin: 0 12px;
-        }
-        
-        .sidebar.open .menu-toggle-item .menu-text {
-            display: inline;
-        }
-        
-        .menu-toggle-item:hover {
-            background: rgba(255, 255, 255, 0.08);
-            color: white;
-        }
-        
-        .sidebar-menu {
-            list-style: none;
-            padding: 0;
-        }
-        
-        .sidebar-menu li {
-            margin: 4px 0;
-        }
-        
+        .sidebar-menu { list-style: none; padding: 0; }
+        .sidebar-menu li { margin: 4px 0; }
         .sidebar-menu a {
             display: flex;
             align-items: center;
@@ -122,50 +86,14 @@
             font-size: 14px;
             font-weight: 450;
         }
-        
-        .sidebar-menu a i {
-            font-size: 22px;
-            width: 28px;
-            text-align: center;
-        }
-        
-        .sidebar-menu a .menu-text {
-            display: none;
-            font-size: 13px;
-        }
-        
-        .sidebar.open .sidebar-menu a {
-            justify-content: flex-start;
-            padding: 10px 16px;
-            margin: 0 12px;
-        }
-        
-        .sidebar.open .sidebar-menu a .menu-text {
-            display: inline;
-        }
-        
-        .sidebar-menu a:hover {
-            background: rgba(255, 255, 255, 0.06);
-            color: white;
-        }
-        
-        .sidebar-menu a.active {
-            background: rgba(37, 99, 235, 0.15);
-            color: white;
-        }
-        
-        .sidebar-menu a.active i {
-            background: #2563EB;
-            color: white;
-            border-radius: 50%;
-            padding: 6px;
-            width: 34px;
-            margin-right: -3px;
-        }
-        
-        .sidebar.open .sidebar-menu a.active i {
-            margin-right: 0;
-        }
+        .sidebar-menu a i { font-size: 22px; width: 28px; text-align: center; }
+        .sidebar-menu a .menu-text { display: none; font-size: 13px; }
+        .sidebar.open .sidebar-menu a { justify-content: flex-start; padding: 10px 16px; margin: 0 12px; }
+        .sidebar.open .sidebar-menu a .menu-text { display: inline; }
+        .sidebar-menu a:hover { background: rgba(255, 255, 255, 0.06); color: white; }
+        .sidebar-menu a.active { background: rgba(37, 99, 235, 0.15); color: white; }
+        .sidebar-menu a.active i { background: #2563EB; color: white; border-radius: 50%; padding: 6px; width: 34px; margin-right: -3px; }
+        .sidebar.open .sidebar-menu a.active i { margin-right: 0; }
         
         .main-content {
             margin-right: 70px;
@@ -182,25 +110,10 @@
             padding-bottom: 16px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.08);
         }
+        .page-title { color: white; font-size: 26px; font-weight: 600; letter-spacing: -0.3px; }
         
-        .page-title {
-            color: white;
-            font-size: 26px;
-            font-weight: 600;
-            letter-spacing: -0.3px;
-        }
-        
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-        
-        .user-name {
-            color: rgba(255, 255, 255, 0.85);
-            font-weight: 500;
-            font-size: 14px;
-        }
+        .user-info { display: flex; align-items: center; gap: 16px; }
+        .user-name { color: rgba(255, 255, 255, 0.85); font-weight: 500; font-size: 14px; }
         
         .btn-icon {
             background: rgba(255, 255, 255, 0.06);
@@ -212,11 +125,7 @@
             border-radius: 30px;
             transition: all 0.2s;
         }
-        
-        .btn-icon:hover {
-            background: rgba(255, 255, 255, 0.12);
-            color: white;
-        }
+        .btn-icon:hover { background: rgba(255, 255, 255, 0.12); color: white; }
         
         .service-detail-card {
             background: rgba(255, 255, 255, 0.94);
@@ -433,10 +342,51 @@
     
     <script src="{% static 'js/api.js' %}"></script>
     <script>
+        // ============================================================
+        // ================== تبدیل تاریخ به فارسی ===================
+        // ============================================================
+        function toPersianDate(dateString) {
+            if (!dateString) return 'نامشخص';
+            
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) return 'نامشخص';
+            
+            return date.toLocaleDateString('fa-IR', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+            });
+        }
+        
+        function toPersianTime(dateString) {
+            if (!dateString) return 'نامشخص';
+            
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) return 'نامشخص';
+            
+            return date.toLocaleTimeString('fa-IR', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+        
+        // ============================================================
+        // ================== متغیرها =================================
+        // ============================================================
         const sidebar = document.getElementById('sidebar');
         const menuOverlay = document.getElementById('menuOverlay');
         const menuToggleBtn = document.getElementById('menuToggleBtn');
         
+        const urlParams = new URLSearchParams(window.location.search);
+        const serviceId = urlParams.get('id');
+        
+        let currentService = null;
+        let selectedSlotId = null;
+        let allSlots = [];
+        
+        // ============================================================
+        // ================== منوی همبرگری ===========================
+        // ============================================================
         function toggleMenu() {
             if (sidebar.classList.contains('open')) {
                 sidebar.classList.remove('open');
@@ -452,6 +402,9 @@
         if (menuToggleBtn) menuToggleBtn.addEventListener('click', toggleMenu);
         if (menuOverlay) menuOverlay.addEventListener('click', toggleMenu);
         
+        // ============================================================
+        // ================== خروج =====================================
+        // ============================================================
         const logoutBtn = document.getElementById('logoutBtn');
         if (logoutBtn) {
             logoutBtn.addEventListener('click', () => {
@@ -459,18 +412,17 @@
             });
         }
         
+        // ============================================================
+        // ================== نام کاربر ==============================
+        // ============================================================
         const usernameSpan = document.getElementById('username');
         if (usernameSpan) {
             usernameSpan.innerText = localStorage.getItem('username') || 'مشتری';
         }
         
-        const urlParams = new URLSearchParams(window.location.search);
-        const serviceId = urlParams.get('id');
-        
-        let currentService = null;
-        let currentSlots = [];
-        let selectedSlotId = null;
-        
+        // ============================================================
+        // ================== دریافت جزئیات سرویس ====================
+        // ============================================================
         async function loadServiceDetail() {
             if (!serviceId) {
                 showError('شناسه سرویس یافت نشد');
@@ -478,63 +430,191 @@
             }
             
             try {
-                const searchResults = await CustomerAPI.searchServices({});
-                currentService = searchResults.find(s => s.id == serviceId);
+                const token = localStorage.getItem('token');
+                const response = await fetch(`http://127.0.0.1:8000/api/services/services/${serviceId}/`, {
+                    headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+                });
                 
-                if (currentService) {
-                    document.getElementById('serviceDetail').innerHTML = `
-                        <div class="service-name">${currentService.name}</div>
-                        <div class="service-provider"><i class="fas fa-store"></i> ${currentService.provider}</div>
-                        <div class="service-price">${currentService.price.toLocaleString()} تومان</div>
-                        <div class="service-description">
-                            ${currentService.description || 'توضیحاتی برای این سرویس ثبت نشده است.'}
-                        </div>
-                        <div class="service-meta">
-                            <div class="meta-item"><i class="fas fa-tag"></i> دسته‌بندی: ${currentService.category || 'عمومی'}</div>
-                            <div class="meta-item"><i class="fas fa-clock"></i> مدت زمان: ${currentService.duration || '-'} دقیقه</div>
-                        </div>
-                    `;
-                    document.getElementById('bookingSection').style.display = 'block';
-                    
-                    const tomorrow = new Date();
-                    tomorrow.setDate(tomorrow.getDate() + 1);
-                    document.getElementById('bookingDate').value = tomorrow.toISOString().split('T')[0];
-                    
-                    loadTimeSlots();
-                } else {
-                    document.getElementById('serviceDetail').innerHTML = '<div style="text-align: center; padding: 40px;">سرویس مورد نظر یافت نشد</div>';
+                if (!response.ok) {
+                    throw new Error('سرویس یافت نشد');
                 }
+                
+                const service = await response.json();
+                currentService = service;
+                
+                console.log('📥 اطلاعات سرویس:', service);
+                
+                // نمایش اطلاعات سرویس
+                const serviceName = service.title || service.name || 'بدون نام';
+                const providerName = service.provider_name || service.provider || 'نامشخص';
+                const price = service.price || 0;
+                const description = service.description || 'توضیحاتی برای این سرویس ثبت نشده است.';
+                const categoryName = service.category_name || service.category || 'عمومی';
+                
+                let durationDisplay = 'نامشخص';
+                if (service.duration_display) {
+                    durationDisplay = service.duration_display;
+                } else if (service.duration_minutes) {
+                    const mins = service.duration_minutes;
+                    const hours = Math.floor(mins / 60);
+                    const minutes = mins % 60;
+                    durationDisplay = hours > 0 ? `${hours} ساعت و ${minutes} دقیقه` : `${minutes} دقیقه`;
+                }
+                
+                document.getElementById('serviceDetail').innerHTML = `
+                    <div class="service-name">${serviceName}</div>
+                    <div class="service-provider"><i class="fas fa-store"></i> ${providerName}</div>
+                    <div class="service-price">${price.toLocaleString()} تومان</div>
+                    <div class="service-description">${description}</div>
+                    <div class="service-meta">
+                        <div class="meta-item"><i class="fas fa-tag"></i> دسته‌بندی: ${categoryName}</div>
+                        <div class="meta-item"><i class="fas fa-clock"></i> مدت زمان: ${durationDisplay}</div>
+                    </div>
+                `;
+                
+                document.getElementById('bookingSection').style.display = 'block';
+                
+                // ============================================================
+                // ===== تنظیم تاریخ پیش‌فرض به 2026-06-29 (برای تست) =====
+                // ============================================================
+                const dateInput = document.getElementById('bookingDate');
+                
+                // بررسی کنید که آیا زمان‌هایی در سیستم وجود داره
+                // و اولین تاریخ موجود رو به عنوان پیش‌فرض انتخاب کنید
+                try {
+                    const slotsResponse = await fetch(`http://127.0.0.1:8000/api/services/services/${serviceId}/available_slots/`, {
+                        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+                    });
+                    const slotsData = await slotsResponse.json();
+                    const slots = slotsData.results || slotsData || [];
+                    
+                    if (slots.length > 0) {
+                        // پیدا کردن اولین تاریخ موجود
+                        const firstSlot = slots.find(s => s.start_time);
+                        if (firstSlot && firstSlot.start_time) {
+                            const firstDate = new Date(firstSlot.start_time);
+                            const year = firstDate.getFullYear();
+                            const month = String(firstDate.getMonth() + 1).padStart(2, '0');
+                            const day = String(firstDate.getDate()).padStart(2, '0');
+                            dateInput.value = `${year}-${month}-${day}`;
+                            console.log('📅 تاریخ پیش‌فرض از زمان‌ها:', dateInput.value);
+                        }
+                    } else {
+                        // اگر هیچ زمانی موجود نبود، تاریخ امروز + 2 روز
+                        const defaultDate = new Date();
+                        defaultDate.setDate(defaultDate.getDate() + 2);
+                        dateInput.value = defaultDate.toISOString().split('T')[0];
+                        console.log('📅 تاریخ پیش‌فرض (پیش‌فرض):', dateInput.value);
+                    }
+                } catch (err) {
+                    // در صورت خطا، تاریخ امروز + 2 روز
+                    const defaultDate = new Date();
+                    defaultDate.setDate(defaultDate.getDate() + 2);
+                    dateInput.value = defaultDate.toISOString().split('T')[0];
+                    console.log('📅 تاریخ پیش‌فرض (پیش‌فرض):', dateInput.value);
+                }
+                
+                // بارگذاری زمان‌ها
+                await loadTimeSlots();
+                
             } catch(err) {
                 showError('خطا در بارگذاری اطلاعات سرویس');
-                console.error(err);
+                console.error('❌ خطا:', err);
+                document.getElementById('serviceDetail').innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #EF4444;">
+                        <i class="fas fa-exclamation-circle" style="font-size: 40px; display: block; margin-bottom: 15px;"></i>
+                        خطا در بارگذاری اطلاعات سرویس
+                    </div>
+                `;
             }
         }
         
+        // ============================================================
+        // ================== دریافت زمان‌های قابل رزرو =============
+        // ============================================================
         async function loadTimeSlots() {
-            const date = document.getElementById('bookingDate').value;
+            const dateInput = document.getElementById('bookingDate');
+            const date = dateInput.value;
+            
             if (!date) return;
             
+            const slotsContainer = document.getElementById('timeSlots');
+            slotsContainer.innerHTML = '<div class="no-slots">در حال بارگذاری...</div>';
+            
             try {
-                const slots = await CustomerAPI.getServiceTimeSlots(serviceId, date);
-                currentSlots = slots;
-                const availableSlots = slots.filter(slot => slot.available);
+                const token = localStorage.getItem('token');
+                const url = `http://127.0.0.1:8000/api/services/services/${serviceId}/available_slots/`;
+                
+                console.log('📤 دریافت زمان‌ها از:', url);
+                
+                const response = await fetch(url, {
+                    headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+                });
+                
+                if (!response.ok) {
+                    throw new Error('خطا در دریافت زمان‌ها');
+                }
+                
+                let slots = await response.json();
+                
+                if (slots.results) {
+                    slots = slots.results;
+                } else if (!Array.isArray(slots)) {
+                    slots = [];
+                }
+                
+                console.log('📥 زمان‌های دریافتی:', slots);
+                allSlots = slots;
+                
+                // ===== فیلتر بر اساس تاریخ انتخاب شده =====
+                const selectedDate = new Date(date);
+                selectedDate.setHours(0, 0, 0, 0);
+                
+                const availableSlots = slots.filter(slot => {
+                    if (!slot.start_time) return false;
+                    
+                    const slotDate = new Date(slot.start_time);
+                    slotDate.setHours(0, 0, 0, 0);
+                    
+                    const isSameDate = slotDate.getTime() === selectedDate.getTime();
+                    const isAvailable = slot.is_active !== false && !slot.is_booked;
+                    
+                    return isSameDate && isAvailable;
+                });
+                
+                console.log('📅 زمان‌های تاریخ انتخاب شده:', availableSlots);
+                console.log('📅 تاریخ انتخاب شده:', date);
                 
                 if (availableSlots.length > 0) {
-                    document.getElementById('timeSlots').innerHTML = availableSlots.map(slot => `
-                        <div class="time-slot" data-id="${slot.id}" onclick="selectSlot(${slot.id})">
-                            ${slot.time}
-                        </div>
-                    `).join('');
+                    availableSlots.sort((a, b) => {
+                        return new Date(a.start_time) - new Date(b.start_time);
+                    });
+                    
+                    slotsContainer.innerHTML = availableSlots.map(slot => {
+                        const timeDisplay = toPersianTime(slot.start_time);
+                        const dateDisplay = toPersianDate(slot.start_time);
+                        
+                        return `
+                            <div class="time-slot" data-id="${slot.id}" onclick="selectSlot(${slot.id})" title="${dateDisplay} - ${timeDisplay}">
+                                ${timeDisplay}
+                            </div>
+                        `;
+                    }).join('');
                     selectedSlotId = null;
                 } else {
-                    document.getElementById('timeSlots').innerHTML = '<div class="no-slots">هیچ ساعتی برای این تاریخ موجود نیست</div>';
+                    slotsContainer.innerHTML = '<div class="no-slots">هیچ ساعتی برای این تاریخ موجود نیست</div>';
                 }
+                
             } catch(err) {
+                console.error('❌ خطا:', err);
+                slotsContainer.innerHTML = '<div class="no-slots">خطا در بارگذاری ساعات</div>';
                 showError('خطا در بارگذاری ساعات');
-                console.error(err);
             }
         }
         
+        // ============================================================
+        // ================== انتخاب زمان =============================
+        // ============================================================
         window.selectSlot = (slotId) => {
             document.querySelectorAll('.time-slot').forEach(el => {
                 el.classList.remove('selected');
@@ -546,28 +626,84 @@
             }
         };
         
+        // ============================================================
+        // ================== ثبت رزرو ================================
+        // ============================================================
         document.getElementById('bookNowBtn').addEventListener('click', async () => {
+            // ===== چک کردن لاگین بودن کاربر =====
+            const token = localStorage.getItem('token');
+            if (!token) {
+                showError('لطفاً ابتدا وارد حساب کاربری خود شوید');
+                setTimeout(() => {
+                    window.location.href = '/login/';
+                }, 1500);
+                return;
+            }
+    
             if (!selectedSlotId) {
                 showError('لطفاً یک ساعت را انتخاب کنید');
                 return;
             }
-            
-            const selectedSlot = currentSlots.find(s => s.id == selectedSlotId);
-            if (!selectedSlot || !selectedSlot.available) {
-                showError('این ساعت قابل رزرو نیست');
+    
+            const selectedSlot = allSlots.find(s => s.id === selectedSlotId);
+            if (!selectedSlot) {
+                showError('زمان انتخاب شده یافت نشد');
                 return;
             }
-            
-            const date = document.getElementById('bookingDate').value;
-            const price = currentService.price;
-            
-            window.location.href = `customer-booking.html?serviceId=${serviceId}&slotId=${selectedSlotId}&date=${date}&time=${selectedSlot.time}&price=${price}`;
+    
+            if (selectedSlot.is_booked) {
+                showError('این زمان قبلاً رزرو شده است');
+                return;
+            }
+    
+            // ===== غیرفعال کردن دکمه برای جلوگیری از کلیک مجدد =====
+            const bookBtn = document.getElementById('bookNowBtn');
+            bookBtn.disabled = true;
+            bookBtn.textContent = 'در حال ثبت...';
+    
+            try {
+                const result = await CustomerAPI.createBooking({
+                    slotId: selectedSlotId,
+                    note: ''
+                });
+        
+                console.log('📥 نتیجه رزرو:', result);
+        
+                showSuccess('رزرو با موفقیت ثبت شد! در حال انتقال...');
+        
+                setTimeout(() => {
+                    window.location.href = '/customer-bookings/';
+                }, 2000);
+        
+            } catch(err) {
+                console.error('❌ خطا:', err);
+        
+                // ===== اگر خطا 403 بود، کاربر رو به لاگین هدایت کن =====
+                if (err.message.includes('اجازه') || err.message.includes('دسترسی')) {
+                    showError('لطفاً دوباره وارد حساب کاربری خود شوید');
+                    setTimeout(() => {
+                        window.location.href = '/login/';
+                    }, 2000);
+                } else {
+                    showError(err.message || 'خطا در ثبت رزرو');
+                }
+        
+                // ===== فعال کردن مجدد دکمه =====
+                bookBtn.disabled = false;
+                bookBtn.textContent = 'ثبت رزرو';
+            }
         });
         
+        // ============================================================
+        // ================== تغییر تاریخ =============================
+        // ============================================================
         document.getElementById('bookingDate').addEventListener('change', () => {
             loadTimeSlots();
         });
         
+        // ============================================================
+        // ================== بارگذاری اولیه ==========================
+        // ============================================================
         loadServiceDetail();
     </script>
 </body>
