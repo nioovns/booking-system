@@ -353,24 +353,48 @@ const ProviderAPI = {
     },
 
     getTimeSlots: async (serviceId) => {
+        console.log('📤 دریافت زمان‌بندی برای سرویس:', serviceId);
         const response = await fetch(`${BASE_URL}/services/time-slots/?service=${serviceId}`, {
+            method: 'GET',  
             headers: getHeaders()
         });
-        return handleResponse(response);
+        const data = await response.json();
+        console.log('📥 پاسخ زمان‌بندی:', data);
+    
+        if (data.results) {
+            return data.results;
+        } else if (Array.isArray(data)) {
+            return data;
+        } else {
+            return [];
+        }
     },
 
     addTimeSlot: async (serviceId, slotData) => {
+        console.log('📤 ارسال زمان‌بندی:', { serviceId, slotData });
+        
+        const payload = {
+            service: serviceId,
+            start_time: slotData.start_time,
+            end_time: slotData.end_time,
+            is_active: slotData.is_active !== undefined ? slotData.is_active : true
+        };
+    
+        console.log('📤 payload نهایی:', payload);
+    
         const response = await fetch(`${BASE_URL}/services/time-slots/`, {
             method: 'POST',
             headers: getHeaders(),
-            body: JSON.stringify({
-                service: serviceId,
-                start_time: slotData.start_time,
-                end_time: slotData.end_time,
-                is_active: slotData.is_active !== undefined ? slotData.is_active : true
-            })
+            body: JSON.stringify(payload)
         });
-        return handleResponse(response);
+    
+        const data = await response.json();
+        console.log('📥 پاسخ:', data);
+    
+        if (!response.ok) {
+            throw new Error(data.error || data.detail || data.message || 'خطا در افزودن زمان');
+        }
+        return data;
     },
 
     deleteTimeSlot: async (slotId) => {
