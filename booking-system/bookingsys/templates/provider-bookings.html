@@ -340,6 +340,12 @@
             background: #FEE2E2;
         }
         
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #6B7280;
+        }
+        
         @media (max-width: 800px) {
             .main-content {
                 margin-right: 0;
@@ -431,6 +437,35 @@
     
     <script src="{% static 'js/api.js' %}"></script>
     <script>
+        function toPersianDate(dateString) {
+            if (!dateString) return 'نامشخص';
+            try {
+                const date = new Date(dateString);
+                if (isNaN(date.getTime())) return 'نامشخص';
+                return date.toLocaleDateString('fa-IR', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit'
+                });
+            } catch(e) {
+                return 'نامشخص';
+            }
+        }
+        
+        function toPersianTime(dateString) {
+            if (!dateString) return 'نامشخص';
+            try {
+                const date = new Date(dateString);
+                if (isNaN(date.getTime())) return 'نامشخص';
+                return date.toLocaleTimeString('fa-IR', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            } catch(e) {
+                return 'نامشخص';
+            }
+        }
+        
         const sidebar = document.getElementById('sidebar');
         const menuOverlay = document.getElementById('menuOverlay');
         const menuToggleBtn = document.getElementById('menuToggleBtn');
@@ -453,7 +488,7 @@
         const profileBtn = document.getElementById('profileBtn');
         if (profileBtn) {
             profileBtn.addEventListener('click', () => {
-                window.location.href = 'provider-profile.html';
+                window.location.href = '/provider-profile/';
             });
         }
         
@@ -473,44 +508,101 @@
             'pending': 'در انتظار',
             'confirmed': 'تایید شده',
             'rejected': 'رد شده',
-            'canceled': 'لغو شده'
+            'canceled': 'لغو شده',
+            'completed': 'انجام شده'
+        };
+        
+        const statusClass = {
+            'pending': 'status-pending',
+            'confirmed': 'status-confirmed',
+            'rejected': 'status-rejected',
+            'canceled': 'status-canceled',
+            'completed': 'status-confirmed'
         };
         
         async function loadBookings() {
+            const tbody = document.getElementById('bookingsTableBody');
+            
             try {
                 const bookings = await ProviderAPI.getMyBookings();
+                console.log('📥 رزروهای دریافتی (Provider):', bookings);
+                
+                let bookingsList = bookings;
+                if (bookings.results) {
+                    bookingsList = bookings.results;
+                } else if (!Array.isArray(bookings)) {
+                    bookingsList = [];
+                }
+                
                 const filter = document.getElementById('statusFilter').value;
                 
-                let filteredBookings = bookings;
+                let filteredBookings = bookingsList;
                 if (filter !== 'all') {
-                    filteredBookings = bookings.filter(b => b.status === filter);
+                    filteredBookings = bookingsList.filter(b => b.status === filter);
                 }
                 
                 if (filteredBookings && filteredBookings.length > 0) {
-                    document.getElementById('bookingsTableBody').innerHTML = filteredBookings.map(booking => `
-                        <tr>
-                            <td>${booking.customerName}</td>
-                            <td>${booking.serviceName}</td>
-                            <td>${booking.date}</td>
-                            <td>${booking.time || '-'}</td>
-                            <td>${(booking.price || 0).toLocaleString()} تومان</td>
-                            <td><span class="status-badge status-${booking.status}">${statusMap[booking.status] || booking.status}</span></td>
-                            <td class="action-buttons">
-                                ${booking.status === 'pending' ? `
-                                    <button class="btn-confirm" onclick="updateBookingStatus(${booking.id}, 'confirmed')" title="تایید"><i class="fas fa-check-circle"></i></button>
-                                    <button class="btn-reject" onclick="updateBookingStatus(${booking.id}, 'rejected')" title="رد"><i class="fas fa-times-circle"></i></button>
-                                ` : `
-                                    <span style="color: #9CA3AF; font-size: 12px;">غیرقابل تغییر</span>
-                                `}
-                            </td>
-                        </tr>
-                    `).join('');
+                    tbody.innerHTML = filteredBookings.map(booking => {
+                        console.log('📋 رزرو (Provider):', booking);
+                        
+                        const customerName = booking.customer_name || booking.customerName || 'نامشخص';
+                        const serviceTitle = booking.service_title || booking.serviceName || 'بدون نام';
+                        const price = booking.price_at_booking || booking.price || 0;
+                        const status = booking.status || 'pending';
+                        const statusText = statusMap[status] || status;
+                        const statusCls = statusClass[status] || 'status-pending';
+                        
+                        let dateDisplay = 'نامشخص';
+                        let timeDisplay = 'نامشخص';
+                        
+                        if (booking.time_slot_start) {
+                            dateDisplay = toPersianDate(booking.time_slot_start);
+                            timeDisplay = toPersianTime(booking.time_slot_start);
+                        } else if (booking.start_time) {
+                            dateDisplay = toPersianDate(booking.start_time);
+                            timeDisplay = toPersianTime(booking.start_time);
+                        } else if (booking.date) {
+                            dateDisplay = toPersianDate(booking.date);
+                            timeDisplay = toPersianTime(booking.date);
+                        }
+                        
+                        const isPending = status === 'pending';
+                        
+                        return `
+                            <tr>
+                                <td>${customerName}</td>
+                                <td>${serviceTitle}</td>
+                                <td>${dateDisplay}</td>
+                                <td>${timeDisplay}</td>
+                                <td>${Number(price).toLocaleString()} تومان</td>
+                                <td><span class="status-badge ${statusCls}">${statusText}</span></td>
+                                <td class="action-buttons">
+                                    ${isPending ? `
+                                        <button class="btn-confirm" onclick="updateBookingStatus(${booking.id}, 'confirmed')" title="تایید"><i class="fas fa-check-circle"></i></button>
+                                        <button class="btn-reject" onclick="updateBookingStatus(${booking.id}, 'rejected')" title="رد"><i class="fas fa-times-circle"></i></button>
+                                    ` : `
+                                        <span style="color: #9CA3AF; font-size: 12px;">غیرقابل تغییر</span>
+                                    `}
+                                </td>
+                            </tr>
+                        `;
+                    }).join('');
                 } else {
-                    document.getElementById('bookingsTableBody').innerHTML = '<tr><td colspan="7" style="text-align: center;">هیچ رزروی یافت نشد</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">هیچ رزروی یافت نشد</td></tr>';
                 }
             } catch(err) {
+                console.error('❌ خطا:', err);
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" style="text-align: center; color: #EF4444;">
+                            <i class="fas fa-exclamation-circle"></i>
+                            خطا در بارگذاری رزروها
+                            <br>
+                            <span style="font-size: 12px; color: #9CA3AF;">${err.message}</span>
+                        </td>
+                    </tr>
+                `;
                 showError('خطا در بارگذاری رزروها');
-                console.error(err);
             }
         }
         
@@ -520,9 +612,9 @@
                 try {
                     await ProviderAPI.updateBookingStatus(id, status);
                     showSuccess(`رزرو با موفقیت ${statusText} شد`);
-                    loadBookings();
+                    await loadBookings();
                 } catch(err) {
-                    showError(err.message);
+                    showError(err.message || `خطا در ${statusText} رزرو`);
                 }
             }
         };
