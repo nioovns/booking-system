@@ -314,6 +314,12 @@
             background: #FEE2E2;
         }
         
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #6B7280;
+        }
+        
         .modal {
             display: none;
             position: fixed;
@@ -390,9 +396,7 @@
 </head>
 <body>
     <header class="glass-header">
-        <div class="header-title">
-            پنل مدیریت سیستم
-        </div>
+        <div class="header-title">پنل مدیریت سیستم</div>
     </header>
     
     <div class="menu-overlay" id="menuOverlay"></div>
@@ -436,13 +440,15 @@
                     <tr>
                         <th>نام سرویس</th>
                         <th>ارائه‌دهنده</th>
+                        <th>دسته‌بندی</th>
                         <th>قیمت</th>
+                        <th>مدت زمان</th>
                         <th>وضعیت</th>
                         <th>عملیات</th>
                     </tr>
                 </thead>
                 <tbody id="servicesTableBody">
-                    <tr><td colspan="5" style="text-align: center;">در حال بارگذاری...</td><tr>
+                    <tr><td colspan="7" style="text-align: center;">در حال بارگذاری...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -479,43 +485,103 @@
             }
         }
         
-        menuToggleBtn.addEventListener('click', toggleMenu);
-        menuOverlay.addEventListener('click', toggleMenu);
+        if (menuToggleBtn) menuToggleBtn.addEventListener('click', toggleMenu);
+        if (menuOverlay) menuOverlay.addEventListener('click', toggleMenu);
+        
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', () => {
+                AuthAPI.logout();
+            });
+        }
+        
+        const usernameSpan = document.getElementById('username');
+        if (usernameSpan) {
+            usernameSpan.innerText = localStorage.getItem('username') || 'ادمین';
+        }
         
         async function loadServices() {
+            const tbody = document.getElementById('servicesTableBody');
+            
             try {
                 const services = await AdminAPI.getServices();
-                if (services && services.length > 0) {
-                    document.getElementById('servicesTableBody').innerHTML = services.map(service => `
-                        <tr>
-                            <td>${service.name}</td>
-                            <td>${service.providerName || '-'}</td>
-                            <td>${(service.price || 0).toLocaleString()} تومان</td>
-                            <td><span class="status-badge ${service.status === 'active' ? 'status-active' : 'status-inactive'}">${service.status === 'active' ? 'فعال' : 'غیرفعال'}</span></td>
-                            <td class="action-buttons">
-                                <button class="btn-toggle" onclick="toggleServiceStatus(${service.id}, '${service.status}')" title="تغییر وضعیت"><i class="fas fa-power-off"></i></button>
-                                <button class="btn-delete" onclick="deleteService(${service.id})" title="حذف"><i class="fas fa-trash"></i></button>
-                            </td>
-                        </tr>
-                    `).join('');
+                console.log('📥 سرویس‌های دریافتی (Admin):', services);
+                
+                let servicesList = services;
+                if (services.results) {
+                    servicesList = services.results;
+                } else if (!Array.isArray(services)) {
+                    servicesList = [];
+                }
+                
+                if (servicesList && servicesList.length > 0) {
+                    tbody.innerHTML = servicesList.map(service => {
+                        console.log('📋 سرویس:', service);
+                        
+                        const title = service.title || service.name || 'بدون نام';
+                        const providerName = service.provider_name || service.provider || 'نامشخص';
+                        const categoryName = service.category_name || service.category || 'بدون دسته‌بندی';
+                        const price = service.price || 0;
+                        const duration = service.duration_minutes || service.duration || 0;
+                        const isActive = service.is_active !== undefined ? service.is_active : true;
+                        
+                        let durationDisplay = `${duration} دقیقه`;
+                        if (duration >= 60) {
+                            const hours = Math.floor(duration / 60);
+                            const mins = duration % 60;
+                            durationDisplay = mins > 0 ? `${hours} ساعت و ${mins} دقیقه` : `${hours} ساعت`;
+                        }
+                        
+                        return `
+                            <tr>
+                                <td><strong>${title}</strong></td>
+                                <td>${providerName}</td>
+                                <td>${categoryName}</td>
+                                <td>${Number(price).toLocaleString()} تومان</td>
+                                <td>${durationDisplay}</td>
+                                <td>
+                                    <span class="status-badge ${isActive ? 'status-active' : 'status-inactive'}">
+                                        ${isActive ? 'فعال' : 'غیرفعال'}
+                                    </span>
+                                </td>
+                                <td class="action-buttons">
+                                    <button class="btn-toggle" onclick="toggleServiceStatus(${service.id})" title="تغییر وضعیت">
+                                        <i class="fas ${isActive ? 'fa-pause' : 'fa-play'}"></i>
+                                    </button>
+                                    <button class="btn-delete" onclick="deleteService(${service.id})" title="حذف">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                    }).join('');
                 } else {
-                    document.getElementById('servicesTableBody').innerHTML = '<tr><td colspan="5" style="text-align: center;">هیچ سرویسی یافت نشد</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">هیچ سرویسی یافت نشد</td></tr>';
                 }
             } catch(err) {
-                showError('خطا در بارگذاری خدمات');
-                console.error(err);
+                console.error('❌ خطا:', err);
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" style="text-align: center; color: #EF4444;">
+                            <i class="fas fa-exclamation-circle"></i>
+                            خطا در بارگذاری سرویس‌ها
+                            <br>
+                            <span style="font-size: 12px; color: #9CA3AF;">${err.message}</span>
+                        </td>
+                    </tr>
+                `;
+                showError('خطا در بارگذاری سرویس‌ها');
             }
         }
         
-        window.toggleServiceStatus = async (id, currentStatus) => {
-            const newStatus = currentStatus === 'active' ? 'غیرفعال' : 'فعال';
-            if (confirm(`آیا از تغییر وضعیت این سرویس به ${newStatus} اطمینان دارید؟`)) {
+        window.toggleServiceStatus = async (id) => {
+            if (confirm('آیا از تغییر وضعیت این سرویس اطمینان دارید؟')) {
                 try {
                     await AdminAPI.toggleServiceStatus(id);
                     showSuccess('وضعیت سرویس با موفقیت تغییر کرد');
-                    loadServices();
+                    await loadServices();
                 } catch(err) {
-                    showError(err.message);
+                    showError(err.message || 'خطا در تغییر وضعیت سرویس');
                 }
             }
         };
@@ -525,18 +591,12 @@
                 try {
                     await AdminAPI.deleteService(id);
                     showSuccess('سرویس با موفقیت حذف شد');
-                    loadServices();
+                    await loadServices();
                 } catch(err) {
-                    showError(err.message);
+                    showError(err.message || 'خطا در حذف سرویس');
                 }
             }
         };
-        
-        document.getElementById('username').innerText = localStorage.getItem('username') || 'ادمین';
-        
-        document.getElementById('logoutBtn').addEventListener('click', () => {
-            AuthAPI.logout();
-        });
         
         const pwdModal = document.getElementById('changePasswordModal');
         document.getElementById('changePasswordBtn').addEventListener('click', () => pwdModal.classList.add('active'));
@@ -546,6 +606,15 @@
             const oldPass = document.getElementById('oldPassword').value;
             const newPass = document.getElementById('newPassword').value;
             const confirmPass = document.getElementById('confirmPassword').value;
+            
+            if (newPass !== confirmPass) {
+                showError('رمز جدید و تکرار آن مطابقت ندارند');
+                return;
+            }
+            if (newPass.length < 6) {
+                showError('رمز عبور باید حداقل ۶ کاراکتر باشد');
+                return;
+            }
             
             try {
                 await AuthAPI.changePassword(oldPass, newPass, confirmPass);

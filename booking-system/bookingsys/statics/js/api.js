@@ -224,10 +224,16 @@ const AdminAPI = {
     },
 
     toggleServiceStatus: async (serviceId) => {
+        const services = await AdminAPI.getServices();
+        const servicesList = services.results || services;
+        const service = Array.isArray(servicesList) ? servicesList.find(s => s.id === serviceId) : null;
+    
+        if (!service) throw new Error('سرویس یافت نشد');
+    
         const response = await fetch(`${BASE_URL}/services/services/${serviceId}/`, {
             method: 'PATCH',
             headers: getHeaders(),
-            body: JSON.stringify({ is_active: true })
+            body: JSON.stringify({ is_active: !service.is_active })
         });
         return handleResponse(response);
     },
