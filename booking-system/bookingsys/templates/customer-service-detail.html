@@ -342,9 +342,6 @@
     
     <script src="{% static 'js/api.js' %}"></script>
     <script>
-        // ============================================================
-        // ================== تبدیل تاریخ به فارسی ===================
-        // ============================================================
         function toPersianDate(dateString) {
             if (!dateString) return 'نامشخص';
             
@@ -370,9 +367,6 @@
             });
         }
         
-        // ============================================================
-        // ================== متغیرها =================================
-        // ============================================================
         const sidebar = document.getElementById('sidebar');
         const menuOverlay = document.getElementById('menuOverlay');
         const menuToggleBtn = document.getElementById('menuToggleBtn');
@@ -384,9 +378,6 @@
         let selectedSlotId = null;
         let allSlots = [];
         
-        // ============================================================
-        // ================== منوی همبرگری ===========================
-        // ============================================================
         function toggleMenu() {
             if (sidebar.classList.contains('open')) {
                 sidebar.classList.remove('open');
@@ -402,9 +393,6 @@
         if (menuToggleBtn) menuToggleBtn.addEventListener('click', toggleMenu);
         if (menuOverlay) menuOverlay.addEventListener('click', toggleMenu);
         
-        // ============================================================
-        // ================== خروج =====================================
-        // ============================================================
         const logoutBtn = document.getElementById('logoutBtn');
         if (logoutBtn) {
             logoutBtn.addEventListener('click', () => {
@@ -412,17 +400,11 @@
             });
         }
         
-        // ============================================================
-        // ================== نام کاربر ==============================
-        // ============================================================
         const usernameSpan = document.getElementById('username');
         if (usernameSpan) {
             usernameSpan.innerText = localStorage.getItem('username') || 'مشتری';
         }
         
-        // ============================================================
-        // ================== دریافت جزئیات سرویس ====================
-        // ============================================================
         async function loadServiceDetail() {
             if (!serviceId) {
                 showError('شناسه سرویس یافت نشد');
@@ -444,7 +426,6 @@
                 
                 console.log('📥 اطلاعات سرویس:', service);
                 
-                // نمایش اطلاعات سرویس
                 const serviceName = service.title || service.name || 'بدون نام';
                 const providerName = service.provider_name || service.provider || 'نامشخص';
                 const price = service.price || 0;
@@ -474,13 +455,8 @@
                 
                 document.getElementById('bookingSection').style.display = 'block';
                 
-                // ============================================================
-                // ===== تنظیم تاریخ پیش‌فرض به 2026-06-29 (برای تست) =====
-                // ============================================================
                 const dateInput = document.getElementById('bookingDate');
                 
-                // بررسی کنید که آیا زمان‌هایی در سیستم وجود داره
-                // و اولین تاریخ موجود رو به عنوان پیش‌فرض انتخاب کنید
                 try {
                     const slotsResponse = await fetch(`http://127.0.0.1:8000/api/services/services/${serviceId}/available_slots/`, {
                         headers: token ? { 'Authorization': `Bearer ${token}` } : {}
@@ -489,7 +465,6 @@
                     const slots = slotsData.results || slotsData || [];
                     
                     if (slots.length > 0) {
-                        // پیدا کردن اولین تاریخ موجود
                         const firstSlot = slots.find(s => s.start_time);
                         if (firstSlot && firstSlot.start_time) {
                             const firstDate = new Date(firstSlot.start_time);
@@ -500,21 +475,18 @@
                             console.log('📅 تاریخ پیش‌فرض از زمان‌ها:', dateInput.value);
                         }
                     } else {
-                        // اگر هیچ زمانی موجود نبود، تاریخ امروز + 2 روز
                         const defaultDate = new Date();
                         defaultDate.setDate(defaultDate.getDate() + 2);
                         dateInput.value = defaultDate.toISOString().split('T')[0];
                         console.log('📅 تاریخ پیش‌فرض (پیش‌فرض):', dateInput.value);
                     }
                 } catch (err) {
-                    // در صورت خطا، تاریخ امروز + 2 روز
                     const defaultDate = new Date();
                     defaultDate.setDate(defaultDate.getDate() + 2);
                     dateInput.value = defaultDate.toISOString().split('T')[0];
                     console.log('📅 تاریخ پیش‌فرض (پیش‌فرض):', dateInput.value);
                 }
                 
-                // بارگذاری زمان‌ها
                 await loadTimeSlots();
                 
             } catch(err) {
@@ -529,9 +501,6 @@
             }
         }
         
-        // ============================================================
-        // ================== دریافت زمان‌های قابل رزرو =============
-        // ============================================================
         async function loadTimeSlots() {
             const dateInput = document.getElementById('bookingDate');
             const date = dateInput.value;
@@ -566,7 +535,6 @@
                 console.log('📥 زمان‌های دریافتی:', slots);
                 allSlots = slots;
                 
-                // ===== فیلتر بر اساس تاریخ انتخاب شده =====
                 const selectedDate = new Date(date);
                 selectedDate.setHours(0, 0, 0, 0);
                 
@@ -612,9 +580,6 @@
             }
         }
         
-        // ============================================================
-        // ================== انتخاب زمان =============================
-        // ============================================================
         window.selectSlot = (slotId) => {
             document.querySelectorAll('.time-slot').forEach(el => {
                 el.classList.remove('selected');
@@ -626,11 +591,7 @@
             }
         };
         
-        // ============================================================
-        // ================== ثبت رزرو ================================
-        // ============================================================
         document.getElementById('bookNowBtn').addEventListener('click', async () => {
-            // ===== چک کردن لاگین بودن کاربر =====
             const token = localStorage.getItem('token');
             if (!token) {
                 showError('لطفاً ابتدا وارد حساب کاربری خود شوید');
@@ -656,7 +617,6 @@
                 return;
             }
     
-            // ===== غیرفعال کردن دکمه برای جلوگیری از کلیک مجدد =====
             const bookBtn = document.getElementById('bookNowBtn');
             bookBtn.disabled = true;
             bookBtn.textContent = 'در حال ثبت...';
@@ -678,7 +638,6 @@
             } catch(err) {
                 console.error('❌ خطا:', err);
         
-                // ===== اگر خطا 403 بود، کاربر رو به لاگین هدایت کن =====
                 if (err.message.includes('اجازه') || err.message.includes('دسترسی')) {
                     showError('لطفاً دوباره وارد حساب کاربری خود شوید');
                     setTimeout(() => {
@@ -688,22 +647,15 @@
                     showError(err.message || 'خطا در ثبت رزرو');
                 }
         
-                // ===== فعال کردن مجدد دکمه =====
                 bookBtn.disabled = false;
                 bookBtn.textContent = 'ثبت رزرو';
             }
         });
         
-        // ============================================================
-        // ================== تغییر تاریخ =============================
-        // ============================================================
         document.getElementById('bookingDate').addEventListener('change', () => {
             loadTimeSlots();
         });
         
-        // ============================================================
-        // ================== بارگذاری اولیه ==========================
-        // ============================================================
         loadServiceDetail();
     </script>
 </body>
