@@ -454,18 +454,28 @@ const CustomerAPI = {
         const query = new URLSearchParams();
         if (filters.q) query.append('search', filters.q);
         if (filters.category && filters.category !== 'all') query.append('category', filters.category);
-        if (filters.minPrice) query.append('min_price', filters.minPrice);
-        if (filters.maxPrice) query.append('max_price', filters.maxPrice);
-        if (filters.is_active) query.append('is_active', filters.is_active);
-        
+        if (filters.min_price) query.append('min_price', filters.min_price);
+        if (filters.max_price) query.append('max_price', filters.max_price);
+    
         const url = query.toString() 
             ? `${BASE_URL}/services/services/?${query.toString()}`
             : `${BASE_URL}/services/services/`;
-        
+    
+        console.log('📤 آدرس جستجو:', url);
+    
         const response = await fetch(url, {
             headers: getHeaders()
         });
-        return handleResponse(response);
+        const data = await response.json();
+        console.log('📥 پاسخ جستجو:', data);
+    
+        if (data.results) {
+            return data.results;
+        } else if (Array.isArray(data)) {
+            return data;
+        } else {
+            return [];
+        }
     },
 
     getServiceTimeSlots: async (serviceId, date) => {
