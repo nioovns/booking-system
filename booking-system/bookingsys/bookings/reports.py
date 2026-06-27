@@ -19,14 +19,18 @@ from reportlab.pdfbase.ttfonts import TTFont
 import arabic_reshaper
 from bidi.algorithm import get_display
 
-# pdfmetrics.registerFont(TTFont('Vazir', 'fonts/Vazir.ttf'))
-
 from django.conf import settings
 import os
 
 FONT_PATH = os.path.join(settings.BASE_DIR, 'fonts', 'Vazir.ttf')
-pdfmetrics.registerFont(TTFont('Vazir', FONT_PATH))
 
+try:
+    if os.path.exists(FONT_PATH):
+        pdfmetrics.registerFont(TTFont('Vazir', FONT_PATH))
+    else:
+        print(" هشدار: فایل فونت Vazir پیدا نشد! لطفاً فایل Vazir.ttf را در پوشه 'fonts' (کنار manage.py) قرار دهید.")
+except Exception as e:
+    print(f" خطا در بارگذاری فونت: {e}")
 
 def fa(text):
     if text is None:
@@ -57,9 +61,9 @@ def generate_customer_bookings_pdf(user, bookings):
         fontSize=18,
         alignment=TA_CENTER,
         textColor=colors.HexColor('#0C1844'),
-        spaceAfter=15
+        spaceAfter=15,
+        textTransform='none'  
     )
-
     story.append(Paragraph(fa("گزارش رزروهای مشتری"), title_style))
 
     date_style = ParagraphStyle(
@@ -67,16 +71,17 @@ def generate_customer_bookings_pdf(user, bookings):
         parent=styles['Normal'],
         fontName='Vazir',
         alignment=TA_CENTER,
-        textColor=colors.grey
+        textColor=colors.grey,
+        textTransform='none'
     )
-
     story.append(Paragraph(fa(timezone.now().strftime('%Y/%m/%d %H:%M')), date_style))
     story.append(Spacer(1, 10*mm))
 
     info_style = ParagraphStyle(
         'info',
         parent=styles['Normal'],
-        fontName='Vazir'
+        fontName='Vazir',
+        textTransform='none'
     )
 
     story.append(Paragraph(fa(f"نام مشتری: {user.get_full_name() or user.username}"), info_style))
@@ -90,7 +95,6 @@ def generate_customer_bookings_pdf(user, bookings):
     story.append(Paragraph(fa(f"جمع پرداختی: {total_spent:,.0f} تومان"), info_style))
     story.append(Spacer(1, 8*mm))
 
-    # TABLE
     data = [[fa('#'), fa('سرویس'), fa('تاریخ'), fa('قیمت'), fa('وضعیت'), fa('پرداخت')]]
 
     for idx, b in enumerate(bookings, 1):
@@ -108,11 +112,15 @@ def generate_customer_bookings_pdf(user, bookings):
     table.setStyle(TableStyle([
         ('FONTNAME', (0, 0), (-1, -1), 'Vazir'),
         ('FONTSIZE', (0, 0), (-1, -1), 10),
-        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
         ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#0C1844')),
         ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
         ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
         ('BACKGROUND', (0, 1), (-1, -1), colors.whitesmoke),
+        
+        ('ALIGN', (0, 0), (0, -1), 'CENTER'), 
+        ('ALIGN', (1, 0), (2, -1), 'RIGHT'),  
+        ('ALIGN', (3, 0), (3, -1), 'RIGHT'),   
+        ('ALIGN', (4, 0), (5, -1), 'CENTER'),  
     ]))
 
     story.append(table)
@@ -138,7 +146,8 @@ def generate_provider_bookings_pdf(user, bookings):
         parent=styles['Heading1'],
         fontName='Vazir',
         fontSize=18,
-        alignment=TA_CENTER
+        alignment=TA_CENTER,
+        textTransform='none'
     )
 
     story.append(Paragraph(fa("گزارش رزروهای ارائه‌دهنده"), title_style))
@@ -160,10 +169,14 @@ def generate_provider_bookings_pdf(user, bookings):
 
     table.setStyle(TableStyle([
         ('FONTNAME', (0, 0), (-1, -1), 'Vazir'),
-        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
         ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#0C1844')),
         ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+        
+        ('ALIGN', (0, 0), (0, -1), 'CENTER'),  
+        ('ALIGN', (1, 0), (3, -1), 'RIGHT'),   
+        ('ALIGN', (4, 0), (4, -1), 'RIGHT'),  
+        ('ALIGN', (5, 0), (5, -1), 'CENTER'), 
     ]))
 
     story.append(table)
@@ -185,15 +198,23 @@ def generate_admin_stats_pdf():
         'title',
         fontName='Vazir',
         fontSize=18,
-        alignment=TA_CENTER
+        alignment=TA_CENTER,
+        textTransform='none'
     )
 
     story.append(Paragraph(fa("گزارش آماری سیستم"), title_style))
     story.append(Spacer(1, 10*mm))
 
-    story.append(Paragraph(fa(f"کل کاربران: {User.objects.count()}"), styles['Normal']))
-    story.append(Paragraph(fa(f"کل سرویس‌ها: {Service.objects.count()}"), styles['Normal']))
-    story.append(Paragraph(fa(f"کل رزروها: {Booking.objects.count()}"), styles['Normal']))
+    info_style = ParagraphStyle(
+        'info',
+        parent=styles['Normal'],
+        fontName='Vazir',
+        textTransform='none'
+    )
+
+    story.append(Paragraph(fa(f"کل کاربران: {User.objects.count()}"), info_style))
+    story.append(Paragraph(fa(f"کل سرویس‌ها: {Service.objects.count()}"), info_style))
+    story.append(Paragraph(fa(f"کل رزروها: {Booking.objects.count()}"), info_style))
 
     doc.build(story)
     pdf = buffer.getvalue()
@@ -208,13 +229,14 @@ def generate_invoice_pdf(booking):
     styles = getSampleStyleSheet()
     story = []
 
-    title = ParagraphStyle(
+    title_style = ParagraphStyle(
         'title',
         fontName='Vazir',
         fontSize=20,
-        alignment=TA_CENTER
+        alignment=TA_CENTER,
+        textTransform='none'
     )
-    story.append(Paragraph(fa("فاکتور پرداخت"), title))
+    story.append(Paragraph(fa("فاکتور پرداخت"), title_style))
     story.append(Spacer(1, 10*mm))
 
     info = [
@@ -229,6 +251,8 @@ def generate_invoice_pdf(booking):
     table.setStyle(TableStyle([
         ('FONTNAME', (0, 0), (-1, -1), 'Vazir'),
         ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+        ('ALIGN', (0, 0), (0, -1), 'RIGHT'),
+        ('ALIGN', (1, 0), (1, -1), 'RIGHT'),
     ]))
 
     story.append(table)
