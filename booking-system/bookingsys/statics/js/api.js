@@ -292,12 +292,24 @@ const AdminAPI = {
 
     exportAdminStatsPDF: async () => {
         const token = getToken();
+        if (!token) {
+            throw new Error('لطفاً ابتدا وارد حساب کاربری خود شوید');
+        }
+        
         const response = await fetch(`${BASE_URL}/bookings/bookings/export_admin_stats_pdf/`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
         });
-        if (!response.ok) throw new Error('خطا در تولید PDF');
+        
+        if (response.status === 403) {
+            throw new Error('شما دسترسی به این گزارش ندارید');
+        }
+        
+        if (!response.ok) {
+            throw new Error('خطا در تولید PDF');
+        }
+        
         return response.blob();
     },
 

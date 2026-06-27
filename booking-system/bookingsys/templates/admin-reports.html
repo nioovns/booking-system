@@ -220,7 +220,6 @@
             color: white;
         }
 
-        /* گزارشات */
         .reports-container {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -258,10 +257,14 @@
             padding: 15px;
             background: #F9FAFB;
             border-radius: 16px;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
         .report-stat {
             text-align: center;
+            flex: 1;
+            min-width: 80px;
         }
 
         .report-stat-label {
@@ -271,7 +274,7 @@
         }
 
         .report-stat-value {
-            font-size: 24px;
+            font-size: 20px;
             font-weight: 700;
             color: #0C1844;
         }
@@ -450,6 +453,7 @@
     </div>
 
     <div class="reports-container" id="reportsContainer">
+        <!-- گزارش درآمد -->
         <div class="report-card">
             <h3><i class="fas fa-credit-card"></i> گزارش درآمد</h3>
             <div class="report-stats">
@@ -458,8 +462,12 @@
                     <div class="report-stat-value" id="totalRevenue">0 تومان</div>
                 </div>
                 <div class="report-stat">
-                    <div class="report-stat-label">درآمد این ماه</div>
-                    <div class="report-stat-value" id="monthRevenue">0 تومان</div>
+                    <div class="report-stat-label">درآمد امروز</div>
+                    <div class="report-stat-value" id="todayRevenue">0 تومان</div>
+                </div>
+                <div class="report-stat">
+                    <div class="report-stat-label">درآمد این هفته</div>
+                    <div class="report-stat-value" id="weekRevenue">0 تومان</div>
                 </div>
             </div>
             <button class="btn-pdf" onclick="exportRevenuePDF()">
@@ -467,6 +475,7 @@
             </button>
         </div>
 
+        <!-- گزارش رزروها -->
         <div class="report-card">
             <h3><i class="fas fa-calendar-check"></i> گزارش رزروها</h3>
             <div class="report-stats">
@@ -475,12 +484,12 @@
                     <div class="report-stat-value" id="totalBookings">0</div>
                 </div>
                 <div class="report-stat">
-                    <div class="report-stat-label">رزروهای تایید شده</div>
-                    <div class="report-stat-value" id="confirmedBookings">0</div>
+                    <div class="report-stat-label">رزرو امروز</div>
+                    <div class="report-stat-value" id="todayBookings">0</div>
                 </div>
                 <div class="report-stat">
-                    <div class="report-stat-label">رزروهای در انتظار</div>
-                    <div class="report-stat-value" id="pendingBookings">0</div>
+                    <div class="report-stat-label">رزرو این هفته</div>
+                    <div class="report-stat-value" id="weekBookings">0</div>
                 </div>
             </div>
             <button class="btn-pdf" onclick="exportBookingsPDF()">
@@ -488,6 +497,7 @@
             </button>
         </div>
 
+        <!-- گزارش سرویس‌ها -->
         <div class="report-card">
             <h3><i class="fas fa-concierge-bell"></i> گزارش سرویس‌ها</h3>
             <div class="report-stats">
@@ -509,6 +519,7 @@
             </button>
         </div>
 
+        <!-- گزارش کاربران -->
         <div class="report-card">
             <h3><i class="fas fa-users"></i> گزارش کاربران</h3>
             <div class="report-stats">
@@ -524,12 +535,17 @@
                     <div class="report-stat-label">ارائه‌دهندگان</div>
                     <div class="report-stat-value" id="totalProviders">0</div>
                 </div>
+                <div class="report-stat">
+                    <div class="report-stat-label">مدیران</div>
+                    <div class="report-stat-value" id="totalAdmins">0</div>
+                </div>
             </div>
             <button class="btn-pdf" onclick="exportUsersPDF()">
                 <i class="fas fa-file-pdf"></i> خروجی PDF گزارش کاربران
             </button>
         </div>
 
+        <!-- آخرین رزروها -->
         <div class="report-card full-width-card">
             <h3><i class="fas fa-clock"></i> آخرین رزروها</h3>
             <div id="recentBookingsList" class="bookings-list">
@@ -557,6 +573,38 @@
 
 <script src="{% static 'js/api.js' %}"></script>
 <script>
+    function toPersianDate(dateString) {
+        if (!dateString) return 'نامشخص';
+        try {
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) return 'نامشخص';
+            return date.toLocaleDateString('fa-IR', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+            });
+        } catch(e) {
+            return 'نامشخص';
+        }
+    }
+
+    function toPersianDateTime(dateString) {
+        if (!dateString) return 'نامشخص';
+        try {
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) return 'نامشخص';
+            return date.toLocaleDateString('fa-IR', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        } catch(e) {
+            return 'نامشخص';
+        }
+    }
+
     const sidebar = document.getElementById('sidebar');
     const menuOverlay = document.getElementById('menuOverlay');
     const menuToggleBtn = document.getElementById('menuToggleBtn');
@@ -576,188 +624,11 @@
     menuToggleBtn.addEventListener('click', toggleMenu);
     menuOverlay.addEventListener('click', toggleMenu);
 
-    let dashboardData = {};
-    let bookingsList = [];
-
-    async function loadAllReports() {
-        try {
-            dashboardData = await AdminAPI.getDashboardData();
-            bookingsList = await AdminAPI.getBookings();
-
-            document.getElementById('totalRevenue').innerText = (dashboardData.totalRevenue || 0).toLocaleString() + ' تومان';
-            document.getElementById('monthRevenue').innerText = (Math.round((dashboardData.totalRevenue || 0) / 3)).toLocaleString() + ' تومان';
-
-            document.getElementById('totalBookings').innerText = dashboardData.totalBookings || 0;
-            const confirmed = bookingsList.filter(b => b.status === 'confirmed').length;
-            const pending = bookingsList.filter(b => b.status === 'pending').length;
-            document.getElementById('confirmedBookings').innerText = confirmed;
-            document.getElementById('pendingBookings').innerText = pending;
-
-            const services = await AdminAPI.getServices();
-            document.getElementById('totalServices').innerText = services.length;
-            document.getElementById('activeServices').innerText = services.filter(s => s.is_active).length;
-            document.getElementById('inactiveServices').innerText = services.filter(s => !s.is_active).length;
-
-            const users = await AdminAPI.getUsers();
-            document.getElementById('totalUsers').innerText = users.length;
-            document.getElementById('totalCustomers').innerText = users.filter(u => u.role === 'customer').length;
-            document.getElementById('totalProviders').innerText = users.filter(u => u.role === 'service_provider').length;
-
-            const recentBookings = bookingsList.slice(0, 10);
-            const statusMap = {
-                'pending': 'در انتظار',
-                'confirmed': 'تایید شده',
-                'rejected': 'رد شده',
-                'canceled': 'لغو شده'
-            };
-            const statusClass = {
-                'pending': '#D97706',
-                'confirmed': '#059669',
-                'rejected': '#DC2626',
-                'canceled': '#6B7280'
-            };
-
-            if (recentBookings.length > 0) {
-                document.getElementById('recentBookingsList').innerHTML = recentBookings.map(booking => `
-                        <div class="booking-item">
-                            <div class="booking-info">
-                                <div class="booking-service">${booking.service_title || booking.serviceName}</div>
-                                <div class="booking-detail">${booking.customer_name || booking.customerName} | ${booking.booking_date || booking.date}</div>
-                            </div>
-                            <span class="booking-status" style="background: ${statusClass[booking.status]}20; color: ${statusClass[booking.status]};">${statusMap[booking.status] || booking.status}</span>
-                        </div>
-                    `).join('');
-            } else {
-                document.getElementById('recentBookingsList').innerHTML = '<div style="text-align: center; padding: 20px;">هیچ رزروی یافت نشد</div>';
-            }
-
-        } catch (err) {
-            showError('خطا در بارگذاری گزارشات');
-            console.error(err);
-        }
-    }
-
-    async function generatePDF(title, content, filename) {
-        const {jsPDF} = window.jspdf;
-        const doc = new jsPDF({unit: 'pt', format: 'a4'});
-
-        doc.setFont('Vazirmatn');
-
-        doc.setFontSize(20);
-        doc.setTextColor(12, 24, 68);
-        doc.text('سامانه مدیریت خدمات', 40, 50);
-
-        doc.setFontSize(14);
-        doc.setTextColor(100, 100, 100);
-        const now = new Date();
-        doc.text(`تاریخ: ${now.toLocaleDateString('fa-IR')}`, 40, 80);
-
-        doc.setFontSize(18);
-        doc.setTextColor(12, 24, 68);
-        doc.text(title, 40, 120);
-
-        doc.setFontSize(12);
-        doc.setTextColor(80, 80, 80);
-
-        let y = 160;
-        for (const line of content) {
-            if (y > 750) {
-                doc.addPage();
-                y = 50;
-            }
-            doc.text(line, 40, y);
-            y += 25;
-        }
-
-        doc.setFontSize(10);
-        doc.setTextColor(150, 150, 150);
-        doc.text('این گزارش به صورت خودکار توسط سامانه مدیریت خدمات تولید شده است.', 40, y + 30);
-
-        doc.save(`${filename}_${now.toISOString().slice(0, 19)}.pdf`);
-    }
-
-    window.exportRevenuePDF = async () => {
-        const content = [
-            `کل درآمد: ${(dashboardData.totalRevenue || 0).toLocaleString()} تومان`,
-            `درآمد این ماه: ${(Math.round((dashboardData.totalRevenue || 0) / 3)).toLocaleString()} تومان`,
-            `تعداد کل رزروها: ${dashboardData.totalBookings || 0}`,
-            `تعداد سرویس‌های فعال: ${dashboardData.activeServices || 0}`,
-            `تعداد کاربران فعال: ${dashboardData.totalUsers || 0}`
-        ];
-        await generatePDF('گزارش درآمد', content, 'revenue_report');
-    };
-
-    window.exportBookingsPDF = async () => {
-        const confirmed = bookingsList.filter(b => b.status === 'confirmed').length;
-        const pending = bookingsList.filter(b => b.status === 'pending').length;
-        const content = [
-            `کل رزروها: ${dashboardData.totalBookings || 0}`,
-            `رزروهای تایید شده: ${confirmed}`,
-            `رزروهای در انتظار: ${pending}`,
-            `رزروهای لغو شده: ${bookingsList.filter(b => b.status === 'canceled').length}`,
-            `رزروهای رد شده: ${bookingsList.filter(b => b.status === 'rejected').length}`
-        ];
-        await generatePDF('گزارش رزروها', content, 'bookings_report');
-    };
-
-    window.exportServicesPDF = async () => {
-        const services = await AdminAPI.getServices();
-        const active = services.filter(s => s.is_active).length;
-        const inactive = services.filter(s => !s.is_active).length;
-        const content = [
-            `کل سرویس‌ها: ${services.length}`,
-            `سرویس‌های فعال: ${active}`,
-            `سرویس‌های غیرفعال: ${inactive}`,
-            ``,
-            `لیست سرویس‌ها:`
-        ];
-        services.forEach(s => {
-            content.push(`- ${s.title} (${s.provider_name || s.providerName}) - ${(s.price || 0).toLocaleString()} تومان - ${s.is_active ? 'فعال' : 'غیرفعال'}`);
-        });
-        await generatePDF('گزارش سرویس‌ها', content, 'services_report');
-    };
-
-    window.exportUsersPDF = async () => {
-        const users = await AdminAPI.getUsers();
-        const customers = users.filter(u => u.role === 'customer').length;
-        const providers = users.filter(u => u.role === 'service_provider').length;
-        const admins = users.filter(u => u.role === 'admin').length;
-        const content = [
-            `کل کاربران: ${users.length}`,
-            `مشتریان: ${customers}`,
-            `ارائه‌دهندگان: ${providers}`,
-            `مدیران: ${admins}`,
-            ``,
-            `لیست کاربران:`
-        ];
-        users.forEach(u => {
-            const roleName = u.role === 'admin' ? 'مدیر' : (u.role === 'service_provider' ? 'ارائه‌دهنده' : 'مشتری');
-            content.push(`- ${u.username} (${roleName}) - تاریخ عضویت: ${u.date_joined || '-'}`);
-        });
-        await generatePDF('گزارش کاربران', content, 'users_report');
-    };
-
-    window.exportRecentBookingsPDF = async () => {
-        const statusMap = {
-            'pending': 'در انتظار',
-            'confirmed': 'تایید شده',
-            'rejected': 'رد شده',
-            'canceled': 'لغو شده'
-        };
-        const content = [
-            `لیست آخرین رزروها (${bookingsList.length} رزرو):`,
-            ``
-        ];
-        bookingsList.slice(0, 20).forEach(b => {
-            content.push(`- سرویس: ${b.service_title || b.serviceName} | مشتری: ${b.customer_name || b.customerName} | تاریخ: ${b.booking_date || b.date} | وضعیت: ${statusMap[b.status] || b.status}`);
-        });
-        await generatePDF('گزارش آخرین رزروها', content, 'recent_bookings_report');
-    };
-
-    document.getElementById('username').innerText = localStorage.getItem('username') || 'ادمین';
     document.getElementById('logoutBtn').addEventListener('click', () => {
         AuthAPI.logout();
     });
+
+    document.getElementById('username').innerText = localStorage.getItem('username') || 'ادمین';
 
     const pwdModal = document.getElementById('changePasswordModal');
     document.getElementById('changePasswordBtn').addEventListener('click', () => pwdModal.classList.add('active'));
@@ -767,6 +638,16 @@
         const oldPass = document.getElementById('oldPassword').value;
         const newPass = document.getElementById('newPassword').value;
         const confirmPass = document.getElementById('confirmPassword').value;
+        
+        if (newPass !== confirmPass) {
+            showError('رمز جدید و تکرار آن مطابقت ندارند');
+            return;
+        }
+        if (newPass.length < 6) {
+            showError('رمز عبور باید حداقل ۶ کاراکتر باشد');
+            return;
+        }
+        
         try {
             await AuthAPI.changePassword(oldPass, newPass, confirmPass);
             showSuccess('رمز با موفقیت تغییر کرد');
@@ -774,10 +655,376 @@
             document.getElementById('oldPassword').value = '';
             document.getElementById('newPassword').value = '';
             document.getElementById('confirmPassword').value = '';
-        } catch (err) {
+        } catch(err) {
             showError(err.message);
         }
     });
+
+    const statusMap = {
+        'pending': 'در انتظار',
+        'confirmed': 'تایید شده',
+        'rejected': 'رد شده',
+        'canceled': 'لغو شده',
+        'completed': 'انجام شده'
+    };
+
+    const statusClass = {
+        'pending': '#D97706',
+        'confirmed': '#059669',
+        'rejected': '#DC2626',
+        'canceled': '#6B7280',
+        'completed': '#2563EB'
+    };
+
+    let dashboardData = {};
+    let bookingsList = [];
+    let servicesList = [];
+    let usersList = [];
+
+    async function loadAllReports() {
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                showError('لطفاً ابتدا وارد حساب کاربری خود شوید');
+                setTimeout(() => {
+                    window.location.href = '/login/';
+                }, 2000);
+                return;
+            }
+
+            dashboardData = await AdminAPI.getDashboardData();
+            console.log('📥 داده‌های داشبورد:', dashboardData);
+
+            bookingsList = await AdminAPI.getBookings();
+            console.log('📥 رزروها:', bookingsList);
+
+            servicesList = await AdminAPI.getServices();
+            console.log('📥 سرویس‌ها:', servicesList);
+
+            usersList = await AdminAPI.getUsers();
+            console.log('📥 کاربران:', usersList);
+
+            const totalRevenue = dashboardData.income?.total || 0;
+            const todayRevenue = dashboardData.income?.today || 0;
+            const weekRevenue = dashboardData.income?.week || 0;
+
+            document.getElementById('totalRevenue').innerText = Number(totalRevenue).toLocaleString() + ' تومان';
+            document.getElementById('todayRevenue').innerText = Number(todayRevenue).toLocaleString() + ' تومان';
+            document.getElementById('weekRevenue').innerText = Number(weekRevenue).toLocaleString() + ' تومان';
+
+            const totalBookings = dashboardData.bookings?.total || 0;
+            const todayBookings = dashboardData.bookings?.today || 0;
+            const weekBookings = dashboardData.bookings?.week || 0;
+
+            document.getElementById('totalBookings').innerText = totalBookings;
+            document.getElementById('todayBookings').innerText = todayBookings;
+            document.getElementById('weekBookings').innerText = weekBookings;
+
+            const services = Array.isArray(servicesList) ? servicesList : (servicesList.results || []);
+            const totalServices = services.length;
+            const activeServices = services.filter(s => s.is_active).length;
+            const inactiveServices = services.filter(s => !s.is_active).length;
+
+            document.getElementById('totalServices').innerText = totalServices;
+            document.getElementById('activeServices').innerText = activeServices;
+            document.getElementById('inactiveServices').innerText = inactiveServices;
+
+            const users = Array.isArray(usersList) ? usersList : (usersList.results || []);
+            const totalUsers = users.length;
+            const customers = users.filter(u => u.role === 'customer').length;
+            const providers = users.filter(u => u.role === 'service_provider').length;
+            const admins = users.filter(u => u.role === 'admin').length;
+
+            document.getElementById('totalUsers').innerText = totalUsers;
+            document.getElementById('totalCustomers').innerText = customers;
+            document.getElementById('totalProviders').innerText = providers;
+            document.getElementById('totalAdmins').innerText = admins;
+
+            const bookings = Array.isArray(bookingsList) ? bookingsList : (bookingsList.results || []);
+            const recentBookings = bookings.slice(0, 10);
+
+            const container = document.getElementById('recentBookingsList');
+
+            if (recentBookings.length > 0) {
+                container.innerHTML = recentBookings.map(booking => {
+                    const serviceTitle = booking.service_title || booking.serviceName || 'بدون نام';
+                    const customerName = booking.customer_name || booking.customerName || 'نامشخص';
+                    const status = booking.status || 'pending';
+                    const statusText = statusMap[status] || status;
+                    const statusColor = statusClass[status] || '#6B7280';
+                    
+                    let dateDisplay = 'نامشخص';
+                    if (booking.time_slot_start) {
+                        dateDisplay = toPersianDateTime(booking.time_slot_start);
+                    } else if (booking.booking_date) {
+                        dateDisplay = toPersianDateTime(booking.booking_date);
+                    }
+
+                    return `
+                        <div class="booking-item">
+                            <div class="booking-info">
+                                <div class="booking-service">${serviceTitle}</div>
+                                <div class="booking-detail">${customerName} | ${dateDisplay}</div>
+                            </div>
+                            <span class="booking-status" style="background: ${statusColor}20; color: ${statusColor};">
+                                ${statusText}
+                            </span>
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                container.innerHTML = '<div style="text-align: center; padding: 20px;">هیچ رزروی یافت نشد</div>';
+            }
+
+        } catch(err) {
+            console.error('❌ خطا:', err);
+            
+            if (err.message.includes('اجازه') || err.message.includes('دسترسی') || err.message.includes('403')) {
+                showError('لطفاً دوباره وارد حساب کاربری خود شوید');
+                setTimeout(() => {
+                    window.location.href = '/login/';
+                }, 2000);
+            } else {
+                showError(err.message || 'خطا در بارگذاری گزارشات');
+            }
+        }
+    }
+
+    async function generatePDF(title, content, filename) {
+        try {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+
+            doc.setFont('Vazirmatn');
+
+            doc.setFontSize(22);
+            doc.setTextColor(12, 24, 68);
+            doc.text('سامانه مدیریت خدمات', 40, 50);
+
+            doc.setFontSize(12);
+            doc.setTextColor(100, 100, 100);
+            const now = new Date();
+            doc.text(`تاریخ: ${now.toLocaleDateString('fa-IR')} - ساعت: ${now.toLocaleTimeString('fa-IR')}`, 40, 80);
+
+            doc.setDrawColor(200, 200, 200);
+            doc.line(40, 95, 550, 95);
+
+            doc.setFontSize(18);
+            doc.setTextColor(12, 24, 68);
+            doc.text(title, 40, 120);
+
+            doc.setFontSize(11);
+            doc.setTextColor(60, 60, 60);
+
+            let y = 150;
+            for (const line of content) {
+                if (y > 750) {
+                    doc.addPage();
+                    y = 50;
+                }
+                
+                if (line.startsWith('-') || line.startsWith('•') || line.startsWith('*')) {
+                    doc.setTextColor(40, 40, 40);
+                    doc.text(line, 60, y);
+                    doc.setTextColor(60, 60, 60);
+                } else if (line.startsWith('   ') || line.startsWith('    ')) {
+                    doc.text(line, 80, y);
+                } else if (line.includes('----------------------------------------')) {
+                    doc.setDrawColor(200, 200, 200);
+                    doc.line(40, y - 5, 550, y - 5);
+                    y += 15;
+                    continue;
+                } else if (line === '') {
+                    y += 10;
+                    continue;
+                } else {
+                    doc.setFontSize(12);
+                    doc.setTextColor(20, 20, 20);
+                    doc.text(line, 40, y);
+                    doc.setFontSize(11);
+                    doc.setTextColor(60, 60, 60);
+                }
+                
+                y += 22;
+            }
+
+            y += 20;
+            doc.setFontSize(9);
+            doc.setTextColor(150, 150, 150);
+            doc.text('این گزارش به صورت خودکار توسط سامانه مدیریت خدمات تولید شده است.', 40, y);
+            doc.text(`نسخه 1.0 - ${now.getFullYear()}`, 40, y + 15);
+
+            doc.save(`${filename}_${now.toISOString().slice(0, 10)}.pdf`);
+            showSuccess('PDF با موفقیت دانلود شد');
+        } catch(err) {
+            console.error('❌ خطا در تولید PDF:', err);
+            showError(err.message || 'خطا در تولید PDF');
+        }
+    }
+
+    async function downloadPDFFromServer(url, filename) {
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                showError('لطفاً ابتدا وارد حساب کاربری خود شوید');
+                return;
+            }
+
+            const response = await fetch(url, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (response.status === 403) {
+                showError('شما دسترسی به این گزارش ندارید. لطفاً دوباره وارد شوید.');
+                setTimeout(() => {
+                    window.location.href = '/login/';
+                }, 2000);
+                return;
+            }
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.error || 'خطا در تولید PDF');
+            }
+
+            const blob = await response.blob();
+            const downloadUrl = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = downloadUrl;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            window.URL.revokeObjectURL(downloadUrl);
+            
+            showSuccess('PDF با موفقیت دانلود شد');
+        } catch(err) {
+            console.error('❌ خطا:', err);
+            showError(err.message || 'خطا در دانلود PDF');
+        }
+    }
+
+    window.exportRevenuePDF = async function() {
+        console.log('📤 کلیک روی دکمه گزارش درآمد');
+        await downloadPDFFromServer(
+            '/api/bookings/bookings/export_admin_stats_pdf/',
+            `report_income_${new Date().toISOString().slice(0, 10)}.pdf`
+        );
+    };
+
+    window.exportBookingsPDF = async function() {
+        console.log('📤 کلیک روی دکمه گزارش رزروها');
+        await downloadPDFFromServer(
+            '/api/bookings/bookings/export_admin_stats_pdf/',
+            `report_bookings_${new Date().toISOString().slice(0, 10)}.pdf`
+        );
+    };
+
+    window.exportServicesPDF = async function() {
+        console.log('📤 کلیک روی دکمه گزارش سرویس‌ها');
+        try {
+            const services = Array.isArray(servicesList) ? servicesList : (servicesList.results || []);
+            const active = services.filter(s => s.is_active).length;
+            const inactive = services.filter(s => !s.is_active).length;
+            
+            const content = [
+                `گزارش سرویس‌ها`,
+                `تاریخ: ${new Date().toLocaleDateString('fa-IR')}`,
+                ``,
+                `کل سرویس‌ها: ${services.length}`,
+                `سرویس‌های فعال: ${active}`,
+                `سرویس‌های غیرفعال: ${inactive}`,
+                ``,
+                `لیست سرویس‌ها:`,
+                `----------------------------------------`
+            ];
+            
+            services.forEach((s, index) => {
+                content.push(`${index + 1}. ${s.title || s.name}`);
+                content.push(`   ارائه‌دهنده: ${s.provider_name || s.provider || 'نامشخص'}`);
+                content.push(`   قیمت: ${Number(s.price || 0).toLocaleString()} تومان`);
+                content.push(`   وضعیت: ${s.is_active ? 'فعال' : 'غیرفعال'}`);
+                content.push(``);
+            });
+            
+            await generatePDF('گزارش سرویس‌ها', content, 'services_report');
+        } catch(err) {
+            console.error('❌ خطا:', err);
+            showError(err.message || 'خطا در تولید گزارش سرویس‌ها');
+        }
+    };
+
+    window.exportUsersPDF = async function() {
+        console.log('📤 کلیک روی دکمه گزارش کاربران');
+        try {
+            const users = Array.isArray(usersList) ? usersList : (usersList.results || []);
+            const customers = users.filter(u => u.role === 'customer').length;
+            const providers = users.filter(u => u.role === 'service_provider').length;
+            const admins = users.filter(u => u.role === 'admin').length;
+            
+            const content = [
+                `گزارش کاربران`,
+                `تاریخ: ${new Date().toLocaleDateString('fa-IR')}`,
+                ``,
+                `کل کاربران: ${users.length}`,
+                `مشتریان: ${customers}`,
+                `ارائه‌دهندگان: ${providers}`,
+                `مدیران: ${admins}`,
+                ``,
+                `لیست کاربران:`,
+                `----------------------------------------`
+            ];
+            
+            users.forEach((u, index) => {
+                const roleName = u.role === 'admin' ? 'مدیر' : (u.role === 'service_provider' ? 'ارائه‌دهنده' : 'مشتری');
+                content.push(`${index + 1}. ${u.username} (${roleName})`);
+                content.push(`   نام: ${u.first_name || ''} ${u.last_name || ''}`);
+                content.push(`   ایمیل: ${u.email || '-'}`);
+                content.push(`   تاریخ عضویت: ${u.date_joined ? toPersianDate(u.date_joined) : '-'}`);
+                content.push(``);
+            });
+            
+            await generatePDF('گزارش کاربران', content, 'users_report');
+        } catch(err) {
+            console.error('❌ خطا:', err);
+            showError(err.message || 'خطا در تولید گزارش کاربران');
+        }
+    };
+
+    window.exportRecentBookingsPDF = async function() {
+        console.log('📤 کلیک روی دکمه گزارش آخرین رزروها');
+        try {
+            const bookings = Array.isArray(bookingsList) ? bookingsList : (bookingsList.results || []);
+            
+            const content = [
+                `گزارش آخرین رزروها`,
+                `تاریخ: ${new Date().toLocaleDateString('fa-IR')}`,
+                ``,
+                `تعداد کل رزروها: ${bookings.length}`,
+                ``,
+                `لیست آخرین رزروها:`,
+                `----------------------------------------`
+            ];
+            
+            bookings.slice(0, 20).forEach((b, index) => {
+                const dateDisplay = b.time_slot_start ? toPersianDateTime(b.time_slot_start) : (b.booking_date ? toPersianDateTime(b.booking_date) : 'نامشخص');
+                const statusText = statusMap[b.status] || b.status;
+                content.push(`${index + 1}. ${b.service_title || b.serviceName || 'بدون نام'}`);
+                content.push(`   مشتری: ${b.customer_name || b.customerName || 'نامشخص'}`);
+                content.push(`   تاریخ: ${dateDisplay}`);
+                content.push(`   قیمت: ${Number(b.price_at_booking || b.price || 0).toLocaleString()} تومان`);
+                content.push(`   وضعیت: ${statusText}`);
+                content.push(``);
+            });
+            
+            await generatePDF('گزارش آخرین رزروها', content, 'recent_bookings_report');
+        } catch(err) {
+            console.error('❌ خطا:', err);
+            showError(err.message || 'خطا در تولید گزارش آخرین رزروها');
+        }
+    };
 
     loadAllReports();
 </script>

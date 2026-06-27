@@ -19,7 +19,14 @@ from reportlab.pdfbase.ttfonts import TTFont
 import arabic_reshaper
 from bidi.algorithm import get_display
 
-pdfmetrics.registerFont(TTFont('Vazir', 'fonts/Vazir.ttf'))
+# pdfmetrics.registerFont(TTFont('Vazir', 'fonts/Vazir.ttf'))
+
+from django.conf import settings
+import os
+
+FONT_PATH = os.path.join(settings.BASE_DIR, 'fonts', 'Vazir.ttf')
+pdfmetrics.registerFont(TTFont('Vazir', FONT_PATH))
+
 
 def fa(text):
     if text is None:
