@@ -191,7 +191,6 @@ def generate_admin_stats_pdf():
     buffer = BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=A4)
 
-    styles = getSampleStyleSheet()
     story = []
 
     title_style = ParagraphStyle(
@@ -201,14 +200,13 @@ def generate_admin_stats_pdf():
         alignment=TA_CENTER,
         textTransform='none'
     )
-
     story.append(Paragraph(fa("گزارش آماری سیستم"), title_style))
     story.append(Spacer(1, 10*mm))
 
     info_style = ParagraphStyle(
         'info',
-        parent=styles['Normal'],
         fontName='Vazir',
+        fontSize=12,
         textTransform='none'
     )
 
@@ -220,7 +218,6 @@ def generate_admin_stats_pdf():
     pdf = buffer.getvalue()
     buffer.close()
     return pdf
-
 
 def generate_invoice_pdf(booking):
     buffer = BytesIO()
